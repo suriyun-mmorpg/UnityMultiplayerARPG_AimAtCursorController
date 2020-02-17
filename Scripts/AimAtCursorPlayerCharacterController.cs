@@ -206,11 +206,19 @@ namespace MultiplayerARPG
             }
 
             // Turn character
-            if (lookDirection.magnitude != 0)
+            if (lookDirection.sqrMagnitude > 0f)
             {
-                int newRotation = (int)(Quaternion.LookRotation(new Vector3(lookDirection.x, 0, lookDirection.y))
-                    .eulerAngles.y + CacheGameplayCameraControls.CacheCameraTransform.eulerAngles.y);
-                PlayerCharacterEntity.SetLookRotation(Quaternion.Euler(0, newRotation, 0));
+                if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
+                {
+                    PlayerCharacterEntity.SetLookRotation(Quaternion.LookRotation(lookDirection));
+                }
+                else
+                {
+                    float rotY = (Quaternion.LookRotation(
+                        new Vector3(lookDirection.x, 0, lookDirection.y)).eulerAngles.y +
+                        CacheGameplayCameraControls.CacheCameraTransform.eulerAngles.y);
+                    PlayerCharacterEntity.SetLookRotation(Quaternion.Euler(0, rotY, 0));
+                }
             }
         }
 
@@ -227,7 +235,7 @@ namespace MultiplayerARPG
         {
             if (hotkeyIndex < 0 || hotkeyIndex >= PlayerCharacterEntity.Hotkeys.Count)
                 return;
-            
+
             CancelBuild();
             buildingItemIndex = -1;
             ConstructingBuildingEntity = null;
@@ -343,7 +351,7 @@ namespace MultiplayerARPG
                     moveDirection += forward * verticalInput;
                     moveDirection += right * horizontalInput;
                     // normalize input if it exceeds 1 in combined length:
-                    if (moveDirection.sqrMagnitude > 1)
+                    if (moveDirection.sqrMagnitude > 1f)
                         moveDirection.Normalize();
                     break;
                 case DimensionType.Dimension2D:
