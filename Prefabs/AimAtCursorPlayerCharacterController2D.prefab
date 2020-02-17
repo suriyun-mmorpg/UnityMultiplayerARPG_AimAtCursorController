@@ -51,7 +51,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b75a3cde61e98194881d58698bccf357, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameplayCameraPrefab: {fileID: 114548782499701980, guid: e51a2d6997fb2b94685a5e956d473ce3,
+  gameplayCameraPrefab: {fileID: 114959064815439586, guid: 251ee6996d91e6a43ac8b034e16ec386,
     type: 2}
   minimapCameraPrefab: {fileID: 114293473902564364, guid: 17b7c56f66b95584583a9e4e6224379e,
     type: 2}
