@@ -19,6 +19,8 @@ namespace MultiplayerARPG
 
         public NearbyEntityDetector ActivatableEntityDetector { get; protected set; }
         public NearbyEntityDetector ItemDropEntityDetector { get; protected set; }
+        protected RaycastHit[] raycasts = new RaycastHit[512];
+        protected RaycastHit2D[] raycasts2D = new RaycastHit2D[512];
 
         protected override void Awake()
         {
@@ -175,20 +177,31 @@ namespace MultiplayerARPG
             }
 
             // Attack when player pressed attack button
-            if (!CacheUISceneGameplay.IsBlockController() &&
+            if (!CacheUISceneGameplay.IsPointerOverUIObject() &&
                 !UICharacterHotkeys.UsingHotkey &&
-                (InputManager.GetButton("Fire1") || InputManager.GetButton("Attack")))
-            {
-                if (PlayerCharacterEntity.RequestAttack(isLeftHandAttacking))
-                    isLeftHandAttacking = !isLeftHandAttacking;
-            }
+                (InputManager.GetButton("Fire1") || InputManager.GetButton("Attack") ||
+                InputManager.GetButtonUp("Fire1") || InputManager.GetButtonUp("Attack")))
+                UpdateFireInput();
 
             // Always forward
-            MovementState movementState = Vector3.Angle(moveDirection, PlayerCharacterEntity.CacheTransform.forward) < 120 ?
+            MovementState movementState = Vector3.Angle(moveDirection, MovementTransform.forward) < 120 ?
                 MovementState.Forward : MovementState.Backward;
             if (InputManager.GetButtonDown("Jump"))
                 movementState |= MovementState.IsJump;
             PlayerCharacterEntity.KeyMovement(moveDirection, movementState);
+        }
+
+        protected void UpdateFireInput()
+        {
+            if (!ConstructingBuildingEntity)
+            {
+                if (PlayerCharacterEntity.RequestAttack(isLeftHandAttacking))
+                    isLeftHandAttacking = !isLeftHandAttacking;
+            }
+            else if (InputManager.GetButtonUp("Fire1") || InputManager.GetButtonUp("Attack"))
+            {
+                ConfirmBuild();
+            }
         }
 
         protected void UpdateLookInput()
@@ -203,7 +216,7 @@ namespace MultiplayerARPG
             else
             {
                 // Turn character follow cursor
-                lookDirection = (InputManager.MousePosition() - CacheGameplayCameraControls.CacheCamera.WorldToScreenPoint(PlayerCharacterEntity.CacheTransform.position)).normalized;
+                lookDirection = (InputManager.MousePosition() - CacheGameplayCameraControls.CacheCamera.WorldToScreenPoint(MovementTransform.position)).normalized;
             }
 
             // Turn character
@@ -220,6 +233,11 @@ namespace MultiplayerARPG
                         CacheGameplayCameraControls.CacheCameraTransform.eulerAngles.y);
                     PlayerCharacterEntity.SetLookRotation(Quaternion.Euler(0, rotY, 0));
                 }
+            }
+
+            if (ConstructingBuildingEntity)
+            {
+                FindAndSetBuildingAreaFromMousePosition();
             }
         }
 
@@ -361,5 +379,80 @@ namespace MultiplayerARPG
             }
             return moveDirection;
         }
+
+        public void FindAndSetBuildingAreaFromMousePosition()
+        {
+            int tempCount = 0;
+            Vector3 tempVector3;
+            // TODO: Test and implement mobile version
+            switch (CurrentGameInstance.DimensionType)
+            {
+                case DimensionType.Dimension3D:
+                    tempCount = PhysicUtils.SortedRaycastNonAlloc3D(CacheGameplayCameraControls.CacheCamera.ScreenPointToRay(InputManager.MousePosition()), raycasts, 100f, CurrentGameInstance.GetBuildLayerMask());
+                    break;
+                case DimensionType.Dimension2D:
+                    tempVector3 = CacheGameplayCameraControls.CacheCamera.ScreenToWorldPoint(InputManager.MousePosition());
+                    tempCount = PhysicUtils.SortedLinecastNonAlloc2D(tempVector3, tempVector3, raycasts2D, CurrentGameInstance.GetBuildLayerMask());
+                    break;
+            }
+            LoopSetBuildingArea(tempCount);
+        }
+
+        /// <summary>
+        /// Return true if found building area
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        private bool LoopSetBuildingArea(int count)
+        {
+            BuildingArea buildingArea;
+            Transform tempTransform;
+            Vector3 tempVector3;
+            Vector3 tempOffset;
+            for (int tempCounter = 0; tempCounter < count; ++tempCounter)
+            {
+                tempTransform = GetRaycastTransform(tempCounter);
+                tempVector3 = GetRaycastPoint(tempCounter);
+                tempOffset = tempVector3 - MovementTransform.position;
+                tempVector3 =  MovementTransform.position + Vector3.ClampMagnitude(tempOffset, CurrentGameInstance.buildDistance);
+
+                buildingArea = tempTransform.GetComponent<BuildingArea>();
+                if (buildingArea == null ||
+                    (buildingArea.Entity && buildingArea.GetObjectId() == ConstructingBuildingEntity.ObjectId) ||
+                    !ConstructingBuildingEntity.buildingTypes.Contains(buildingArea.buildingType))
+                {
+                    // Skip because this area is not allowed to build the building that you are going to build
+                    continue;
+                }
+
+                ConstructingBuildingEntity.BuildingArea = buildingArea;
+                ConstructingBuildingEntity.CacheTransform.position = tempVector3;
+                return true;
+            }
+            return false;
+        }
+
+        #region Pick functions
+        public Transform GetRaycastTransform(int index)
+        {
+            if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
+                return raycasts[index].transform;
+            return raycasts2D[index].transform;
+        }
+
+        public bool GetRaycastIsTrigger(int index)
+        {
+            if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
+                return raycasts[index].collider.isTrigger;
+            return raycasts2D[index].collider.isTrigger;
+        }
+
+        public Vector3 GetRaycastPoint(int index)
+        {
+            if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
+                return raycasts[index].point;
+            return raycasts2D[index].point;
+        }
+        #endregion
     }
 }
