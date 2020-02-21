@@ -315,7 +315,7 @@ namespace MultiplayerARPG
             if (itemIndex < 0)
                 return;
 
-            Item item = characterItem.GetItem();
+            BaseItem item = characterItem.GetItem();
             if (item == null)
                 return;
 
@@ -334,7 +334,7 @@ namespace MultiplayerARPG
                         aimPosition.Value :
                         PlayerCharacterEntity.GetDefaultAttackAimPosition(isLeftHandAttacking)))
                     {
-                        if (item.skillLevel.skill.IsAttack())
+                        if ((item as ISkillItem).UsingSkill.IsAttack())
                         {
                             // Requested to use attack skill then change attacking hand
                             isLeftHandAttacking = !isLeftHandAttacking;
@@ -349,7 +349,7 @@ namespace MultiplayerARPG
             else if (item.IsBuilding())
             {
                 buildingItemIndex = itemIndex;
-                ConstructingBuildingEntity = Instantiate(item.buildingEntity);
+                ConstructingBuildingEntity = Instantiate((item as IBuildingItem).BuildingEntity);
                 ConstructingBuildingEntity.SetupAsBuildMode();
                 ConstructingBuildingEntity.CacheTransform.parent = null;
             }
