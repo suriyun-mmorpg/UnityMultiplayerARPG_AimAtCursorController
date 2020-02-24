@@ -280,14 +280,19 @@ namespace MultiplayerARPG
             if (!GameInstance.Skills.TryGetValue(BaseGameData.MakeDataId(id), out skill) || skill == null ||
                 !PlayerCharacterEntity.GetCaches().Skills.TryGetValue(skill, out skillLevel))
                 return;
-
-            if (PlayerCharacterEntity.RequestUseSkill(skill.DataId,
-                isLeftHandAttacking,
-                aimPosition.HasValue ?
-                aimPosition.Value :
-                PlayerCharacterEntity.GetDefaultAttackAimPosition(isLeftHandAttacking)))
+            
+            bool isAttackSkill = skill.IsAttack();
+            if (!aimPosition.HasValue)
             {
-                if (skill.IsAttack())
+                if (PlayerCharacterEntity.RequestUseSkill(skill.DataId, isLeftHandAttacking) && isAttackSkill)
+                {
+                    // Requested to use attack skill then change attacking hand
+                    isLeftHandAttacking = !isLeftHandAttacking;
+                }
+            }
+            else
+            {
+                if (PlayerCharacterEntity.RequestUseSkill(skill.DataId, isLeftHandAttacking, aimPosition.Value) && isAttackSkill)
                 {
                     // Requested to use attack skill then change attacking hand
                     isLeftHandAttacking = !isLeftHandAttacking;
@@ -327,14 +332,18 @@ namespace MultiplayerARPG
             {
                 if (item.IsSkill())
                 {
-                    if (PlayerCharacterEntity.RequestUseSkillItem(
-                        (short)itemIndex,
-                        isLeftHandAttacking,
-                        aimPosition.HasValue ?
-                        aimPosition.Value :
-                        PlayerCharacterEntity.GetDefaultAttackAimPosition(isLeftHandAttacking)))
+                    bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack();
+                    if (!aimPosition.HasValue)
                     {
-                        if ((item as ISkillItem).UsingSkill.IsAttack())
+                        if (PlayerCharacterEntity.RequestUseSkillItem((short)itemIndex, isLeftHandAttacking) && isAttackSkill)
+                        {
+                            // Requested to use attack skill then change attacking hand
+                            isLeftHandAttacking = !isLeftHandAttacking;
+                        }
+                    }
+                    else
+                    {
+                        if (PlayerCharacterEntity.RequestUseSkillItem((short)itemIndex, isLeftHandAttacking, aimPosition.Value) && isAttackSkill)
                         {
                             // Requested to use attack skill then change attacking hand
                             isLeftHandAttacking = !isLeftHandAttacking;
