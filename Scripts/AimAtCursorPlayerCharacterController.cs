@@ -173,7 +173,7 @@ namespace MultiplayerARPG
             if (moveDirection.sqrMagnitude > 0f)
             {
                 // Character start moving, so hide npc dialog
-                HideNpcDialogs();
+                HideNpcDialog();
             }
 
             // Attack when player pressed attack button
