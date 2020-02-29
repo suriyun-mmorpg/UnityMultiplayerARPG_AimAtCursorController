@@ -21,6 +21,7 @@ namespace MultiplayerARPG
         public NearbyEntityDetector ItemDropEntityDetector { get; protected set; }
         protected RaycastHit[] raycasts = new RaycastHit[512];
         protected RaycastHit2D[] raycasts2D = new RaycastHit2D[512];
+        protected bool waitForKeyup;
 
         protected override void Awake()
         {
@@ -177,8 +178,12 @@ namespace MultiplayerARPG
             }
 
             // Attack when player pressed attack button
-            if (!CacheUISceneGameplay.IsPointerOverUIObject() &&
-                !UICharacterHotkeys.UsingHotkey &&
+            if (CacheUISceneGameplay.IsPointerOverUIObject())
+                waitForKeyup = true;
+            else if (!InputManager.GetButton("Fire1") && !InputManager.GetButton("Attack"))
+                waitForKeyup = false;
+
+            if (!waitForKeyup && !UICharacterHotkeys.UsingHotkey &&
                 (InputManager.GetButton("Fire1") || InputManager.GetButton("Attack") ||
                 InputManager.GetButtonUp("Fire1") || InputManager.GetButtonUp("Attack")))
                 UpdateFireInput();
@@ -216,7 +221,7 @@ namespace MultiplayerARPG
             else
             {
                 // Turn character follow cursor
-                lookDirection = (InputManager.MousePosition() - CacheGameplayCameraControls.CacheCamera.WorldToScreenPoint(MovementTransform.position)).normalized;
+                lookDirection = (InputManager.MousePosition() - new Vector3(Screen.width * 0.5f, Screen.height * 0.5f)).normalized;
             }
 
             // Turn character
