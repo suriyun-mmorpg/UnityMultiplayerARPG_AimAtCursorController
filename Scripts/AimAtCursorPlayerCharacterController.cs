@@ -221,7 +221,7 @@ namespace MultiplayerARPG
             else
             {
                 // Turn character follow cursor
-                lookDirection = (InputManager.MousePosition() - new Vector3(Screen.width * 0.5f, Screen.height * 0.5f)).normalized;
+                lookDirection = (InputManager.MousePosition() - new Vector3(Screen.width, Screen.height) * 0.5f).normalized;
             }
 
             // Turn character
