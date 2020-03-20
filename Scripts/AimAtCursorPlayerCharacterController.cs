@@ -203,10 +203,6 @@ namespace MultiplayerARPG
                 if (PlayerCharacterEntity.RequestAttack(isLeftHandAttacking))
                     isLeftHandAttacking = !isLeftHandAttacking;
             }
-            else if (InputManager.GetButtonUp("Fire1") || InputManager.GetButtonUp("Attack"))
-            {
-                ConfirmBuild();
-            }
         }
 
         protected void UpdateLookInput()
@@ -239,11 +235,6 @@ namespace MultiplayerARPG
                     PlayerCharacterEntity.SetLookRotation(Quaternion.Euler(0, rotY, 0));
                 }
             }
-
-            if (ConstructingBuildingEntity)
-            {
-                FindAndSetBuildingAreaFromMousePosition();
-            }
         }
 
         protected void ReloadAmmo()
@@ -260,9 +251,6 @@ namespace MultiplayerARPG
             if (hotkeyIndex < 0 || hotkeyIndex >= PlayerCharacterEntity.Hotkeys.Count)
                 return;
 
-            CancelBuild();
-            buildingItemIndex = -1;
-            ConstructingBuildingEntity = null;
             ClearQueueUsingSkill();
 
             CharacterHotkey hotkey = PlayerCharacterEntity.Hotkeys[hotkeyIndex];
@@ -285,7 +273,7 @@ namespace MultiplayerARPG
             if (!GameInstance.Skills.TryGetValue(BaseGameData.MakeDataId(id), out skill) || skill == null ||
                 !PlayerCharacterEntity.GetCaches().Skills.TryGetValue(skill, out skillLevel))
                 return;
-            
+
             bool isAttackSkill = skill.IsAttack();
             if (!aimPosition.HasValue)
             {
@@ -333,39 +321,34 @@ namespace MultiplayerARPG
             {
                 PlayerCharacterEntity.RequestEquipItem((short)itemIndex);
             }
-            else if (item.IsUsable())
+            else if (item.IsSkill())
             {
-                if (item.IsSkill())
+                bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack();
+                if (!aimPosition.HasValue)
                 {
-                    bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack();
-                    if (!aimPosition.HasValue)
+                    if (PlayerCharacterEntity.RequestUseSkillItem((short)itemIndex, isLeftHandAttacking) && isAttackSkill)
                     {
-                        if (PlayerCharacterEntity.RequestUseSkillItem((short)itemIndex, isLeftHandAttacking) && isAttackSkill)
-                        {
-                            // Requested to use attack skill then change attacking hand
-                            isLeftHandAttacking = !isLeftHandAttacking;
-                        }
-                    }
-                    else
-                    {
-                        if (PlayerCharacterEntity.RequestUseSkillItem((short)itemIndex, isLeftHandAttacking, aimPosition.Value) && isAttackSkill)
-                        {
-                            // Requested to use attack skill then change attacking hand
-                            isLeftHandAttacking = !isLeftHandAttacking;
-                        }
+                        // Requested to use attack skill then change attacking hand
+                        isLeftHandAttacking = !isLeftHandAttacking;
                     }
                 }
                 else
                 {
-                    PlayerCharacterEntity.RequestUseItem((short)itemIndex);
+                    if (PlayerCharacterEntity.RequestUseSkillItem((short)itemIndex, isLeftHandAttacking, aimPosition.Value) && isAttackSkill)
+                    {
+                        // Requested to use attack skill then change attacking hand
+                        isLeftHandAttacking = !isLeftHandAttacking;
+                    }
                 }
             }
             else if (item.IsBuilding())
             {
                 buildingItemIndex = itemIndex;
-                ConstructingBuildingEntity = Instantiate((item as IBuildingItem).BuildingEntity);
-                ConstructingBuildingEntity.SetupAsBuildMode();
-                ConstructingBuildingEntity.CacheTransform.parent = null;
+                ShowConstructBuildingDialog();
+            }
+            else if (item.IsUsable())
+            {
+                PlayerCharacterEntity.RequestUseItem((short)itemIndex);
             }
         }
 
@@ -394,11 +377,44 @@ namespace MultiplayerARPG
             return moveDirection;
         }
 
-        public void FindAndSetBuildingAreaFromMousePosition()
+        public override Vector3? UpdateBuildAimControls(Vector2 aimAxes, BuildingEntity prefab)
+        {
+            // Instantiate constructing building
+            if (ConstructingBuildingEntity == null)
+                InstantiateConstructingBuilding(prefab);
+            if (InputManager.useMobileInputOnNonMobile || Application.isMobilePlatform)
+                FindAndSetBuildingAreaByAxes(aimAxes);
+            else
+                FindAndSetBuildingAreaByMousePosition();
+            return ConstructingBuildingEntity.Position;
+        }
+
+        public override void FinishBuildAimControls(bool isCancel)
+        {
+            if (isCancel)
+                CancelBuild();
+        }
+
+        public void FindAndSetBuildingAreaByAxes(Vector2 aimAxes)
+        {
+            int tempCount = 0;
+            Vector3 tempVector3 = MovementTransform.position + (GameplayUtils.GetDirectionByAxes(CacheGameplayCameraTransform, aimAxes.x, aimAxes.y) * CurrentGameInstance.buildDistance);
+            switch (CurrentGameInstance.DimensionType)
+            {
+                case DimensionType.Dimension3D:
+                    tempCount = PhysicUtils.SortedRaycastNonAlloc3D(tempVector3 + (Vector3.up * 50f), Vector3.down, raycasts, 100f, CurrentGameInstance.GetBuildLayerMask());
+                    break;
+                case DimensionType.Dimension2D:
+                    tempCount = PhysicUtils.SortedLinecastNonAlloc2D(tempVector3, tempVector3, raycasts2D, CurrentGameInstance.GetBuildLayerMask());
+                    break;
+            }
+            LoopSetBuildingArea(tempCount);
+        }
+
+        public void FindAndSetBuildingAreaByMousePosition()
         {
             int tempCount = 0;
             Vector3 tempVector3;
-            // TODO: Test and implement mobile version
             switch (CurrentGameInstance.DimensionType)
             {
                 case DimensionType.Dimension3D:
@@ -428,7 +444,7 @@ namespace MultiplayerARPG
                 tempTransform = GetRaycastTransform(tempCounter);
                 tempVector3 = GetRaycastPoint(tempCounter);
                 tempOffset = tempVector3 - MovementTransform.position;
-                tempVector3 =  MovementTransform.position + Vector3.ClampMagnitude(tempOffset, CurrentGameInstance.buildDistance);
+                tempVector3 = MovementTransform.position + Vector3.ClampMagnitude(tempOffset, CurrentGameInstance.buildDistance);
 
                 buildingArea = tempTransform.GetComponent<BuildingArea>();
                 if (buildingArea == null ||
