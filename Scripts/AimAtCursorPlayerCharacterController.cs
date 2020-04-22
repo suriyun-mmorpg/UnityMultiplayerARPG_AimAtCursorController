@@ -246,21 +246,16 @@ namespace MultiplayerARPG
                 PlayerCharacterEntity.RequestReload(true);
         }
 
-        public override void UseHotkey(int hotkeyIndex, Vector3? aimPosition)
+        public override void UseHotkey(HotkeyType type, string relateId, Vector3? aimPosition)
         {
-            if (hotkeyIndex < 0 || hotkeyIndex >= PlayerCharacterEntity.Hotkeys.Count)
-                return;
-
             ClearQueueUsingSkill();
-
-            CharacterHotkey hotkey = PlayerCharacterEntity.Hotkeys[hotkeyIndex];
-            switch (hotkey.type)
+            switch (type)
             {
                 case HotkeyType.Skill:
-                    UseSkill(hotkey.relateId, aimPosition);
+                    UseSkill(relateId, aimPosition);
                     break;
                 case HotkeyType.Item:
-                    UseItem(hotkey.relateId, aimPosition);
+                    UseItem(relateId, aimPosition);
                     break;
             }
         }
