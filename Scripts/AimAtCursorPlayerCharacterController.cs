@@ -6,6 +6,12 @@ namespace MultiplayerARPG
 {
     public class AimAtCursorPlayerCharacterController : BasePlayerCharacterController
     {
+        [Header("Camera Controls Prefabs")]
+        [SerializeField]
+        private FollowCameraControls gameplayCameraPrefab;
+        [SerializeField]
+        private FollowCameraControls minimapCameraPrefab;
+
         protected bool isLeftHandAttacking;
         protected bool isSprinting;
         protected BaseCharacterEntity targetCharacter;
@@ -17,6 +23,12 @@ namespace MultiplayerARPG
         protected VehicleEntity targetVehicle;
         protected HarvestableEntity targetHarvestable;
 
+        public FollowCameraControls CacheGameplayCameraControls { get; protected set; }
+        public FollowCameraControls CacheMinimapCameraControls { get; protected set; }
+        public Camera CacheGameplayCamera { get { return CacheGameplayCameraControls.CacheCamera; } }
+        public Camera CacheMiniMapCamera { get { return CacheMinimapCameraControls.CacheCamera; } }
+        public Transform CacheGameplayCameraTransform { get { return CacheGameplayCameraControls.CacheCameraTransform; } }
+        public Transform CacheMiniMapCameraTransform { get { return CacheMinimapCameraControls.CacheCameraTransform; } }
         public NearbyEntityDetector ActivatableEntityDetector { get; protected set; }
         public NearbyEntityDetector ItemDropEntityDetector { get; protected set; }
         protected RaycastHit[] raycasts = new RaycastHit[512];
@@ -26,6 +38,10 @@ namespace MultiplayerARPG
         protected override void Awake()
         {
             base.Awake();
+            if (gameplayCameraPrefab != null)
+                CacheGameplayCameraControls = Instantiate(gameplayCameraPrefab);
+            if (minimapCameraPrefab != null)
+                CacheMinimapCameraControls = Instantiate(minimapCameraPrefab);
             // This entity detector will be find entities to use when pressed activate key
             GameObject tempGameObject = new GameObject("_ActivatingEntityDetector");
             ActivatableEntityDetector = tempGameObject.AddComponent<NearbyEntityDetector>();
@@ -44,9 +60,24 @@ namespace MultiplayerARPG
             ItemDropEntityDetector.findItemDrop = true;
         }
 
+        protected override void Desetup(BasePlayerCharacterEntity characterEntity)
+        {
+            base.Desetup(characterEntity);
+
+            if (CacheGameplayCameraControls != null)
+                CacheGameplayCameraControls.target = null;
+
+            if (CacheMinimapCameraControls != null)
+                CacheMinimapCameraControls.target = null;
+        }
+
         protected override void OnDestroy()
         {
             base.OnDestroy();
+            if (CacheGameplayCameraControls != null)
+                Destroy(CacheGameplayCameraControls.gameObject);
+            if (CacheMinimapCameraControls != null)
+                Destroy(CacheMinimapCameraControls.gameObject);
             if (ActivatableEntityDetector != null)
                 Destroy(ActivatableEntityDetector.gameObject);
             if (ItemDropEntityDetector != null)
@@ -58,7 +89,11 @@ namespace MultiplayerARPG
             if (!PlayerCharacterEntity || !PlayerCharacterEntity.IsOwnerClient)
                 return;
 
-            base.Update();
+            if (CacheGameplayCameraControls != null)
+                CacheGameplayCameraControls.target = CameraTargetTransform;
+
+            if (CacheMinimapCameraControls != null)
+                CacheMinimapCameraControls.target = CameraTargetTransform;
 
             UpdateInput();
         }
