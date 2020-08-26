@@ -21,6 +21,7 @@ namespace MultiplayerARPG
         protected ItemDropEntity targetItemDrop;
         protected BuildingEntity targetBuilding;
         protected VehicleEntity targetVehicle;
+        protected WarpPortalEntity targetWarpPortal;
         protected HarvestableEntity targetHarvestable;
 
         public FollowCameraControls CacheGameplayCameraControls { get; protected set; }
@@ -53,6 +54,7 @@ namespace MultiplayerARPG
             ActivatableEntityDetector.findOnlyAliveBuildings = true;
             ActivatableEntityDetector.findOnlyActivatableBuildings = true;
             ActivatableEntityDetector.findVehicle = true;
+            ActivatableEntityDetector.findWarpPortal = true;
             // This entity detector will be find item drop entities to use when pressed pickup key
             tempGameObject = new GameObject("_ItemDropEntityDetector");
             ItemDropEntityDetector = tempGameObject.AddComponent<NearbyEntityDetector>();
@@ -124,6 +126,9 @@ namespace MultiplayerARPG
                     targetVehicle = null;
                     if (ActivatableEntityDetector.vehicles.Count > 0)
                         targetVehicle = ActivatableEntityDetector.vehicles[0];
+                    targetWarpPortal = null;
+                    if (ActivatableEntityDetector.warpPortals.Count > 0)
+                        targetWarpPortal = ActivatableEntityDetector.warpPortals[0];
                     // Priority Player -> Npc -> Buildings
                     if (targetPlayer && CacheUISceneGameplay)
                     {
@@ -148,10 +153,10 @@ namespace MultiplayerARPG
                         // Enter vehicle
                         PlayerCharacterEntity.RequestEnterVehicle(targetVehicle.ObjectId);
                     }
-                    else
+                    else if (targetWarpPortal)
                     {
                         // Enter warp, For some warp portals that `warpImmediatelyWhenEnter` is FALSE
-                        PlayerCharacterEntity.RequestEnterWarp();
+                        PlayerCharacterEntity.RequestEnterWarp(targetWarpPortal.ObjectId);
                     }
                 }
                 // Pick up nearby items
