@@ -302,8 +302,8 @@ namespace MultiplayerARPG
 
         protected void UseSkill(string id, Vector3? aimPosition)
         {
-            BaseSkill skill = null;
-            short skillLevel = 0;
+            BaseSkill skill;
+            short skillLevel;
 
             if (!GameInstance.Skills.TryGetValue(BaseGameData.MakeDataId(id), out skill) || skill == null ||
                 !PlayerCharacterEntity.GetCaches().Skills.TryGetValue(skill, out skillLevel))
@@ -330,25 +330,35 @@ namespace MultiplayerARPG
 
         protected void UseItem(string id, Vector3? aimPosition)
         {
-            InventoryType inventoryType;
             int itemIndex;
-            byte equipWeaponSet;
-            CharacterItem characterItem;
-            if (PlayerCharacterEntity.IsEquipped(
-                id,
-                out inventoryType,
-                out itemIndex,
-                out equipWeaponSet,
-                out characterItem))
+            BaseItem item;
+            int dataId = BaseGameData.MakeDataId(id);
+            if (GameInstance.Items.ContainsKey(dataId))
             {
-                PlayerCharacterEntity.RequestUnEquipItem(inventoryType, (short)itemIndex, equipWeaponSet);
-                return;
+                item = GameInstance.Items[dataId];
+                itemIndex = OwningCharacter.IndexOfNonEquipItem(dataId);
+            }
+            else
+            {
+                InventoryType inventoryType;
+                byte equipWeaponSet;
+                CharacterItem characterItem;
+                if (PlayerCharacterEntity.IsEquipped(
+                    id,
+                    out inventoryType,
+                    out itemIndex,
+                    out equipWeaponSet,
+                    out characterItem))
+                {
+                    PlayerCharacterEntity.RequestUnEquipItem(inventoryType, (short)itemIndex, equipWeaponSet);
+                    return;
+                }
+                item = characterItem.GetItem();
             }
 
             if (itemIndex < 0)
                 return;
 
-            BaseItem item = characterItem.GetItem();
             if (item == null)
                 return;
 
