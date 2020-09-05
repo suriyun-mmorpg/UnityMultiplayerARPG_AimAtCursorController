@@ -34,7 +34,7 @@ namespace MultiplayerARPG
         public NearbyEntityDetector ItemDropEntityDetector { get; protected set; }
         protected RaycastHit[] raycasts = new RaycastHit[512];
         protected RaycastHit2D[] raycasts2D = new RaycastHit2D[512];
-        protected bool waitForKeyup;
+        protected bool avoidAttackWhileCursorOverUI;
 
         protected override void Awake()
         {
@@ -217,16 +217,22 @@ namespace MultiplayerARPG
                 HideNpcDialog();
             }
 
-            // Attack when player pressed attack button
-            if (CacheUISceneGameplay.IsPointerOverUIObject())
-                waitForKeyup = true;
-            else if (!InputManager.GetButton("Fire1") && !InputManager.GetButton("Attack"))
-                waitForKeyup = false;
+            bool isPointerOverUIObject = CacheUISceneGameplay.IsPointerOverUIObject();
+            // If pointer over ui, start avoid attack inputs
+            // to prevent character attack while pointer over ui
+            if (isPointerOverUIObject)
+                avoidAttackWhileCursorOverUI = true;
 
-            if (!waitForKeyup && !UICharacterHotkeys.UsingHotkey &&
+            // Attack when player pressed attack button
+            if (!avoidAttackWhileCursorOverUI && !UICharacterHotkeys.UsingHotkey &&
                 (InputManager.GetButton("Fire1") || InputManager.GetButton("Attack") ||
                 InputManager.GetButtonUp("Fire1") || InputManager.GetButtonUp("Attack")))
                 UpdateFireInput();
+
+            // No pointer over ui and all attack key released, stop avoid attack inputs
+            if (avoidAttackWhileCursorOverUI && !isPointerOverUIObject &&
+                !InputManager.GetButton("Fire1") && !InputManager.GetButton("Attack"))
+                avoidAttackWhileCursorOverUI = false;
 
             // Always forward
             MovementState movementState = Vector3.Angle(moveDirection, MovementTransform.forward) < 120 ?
