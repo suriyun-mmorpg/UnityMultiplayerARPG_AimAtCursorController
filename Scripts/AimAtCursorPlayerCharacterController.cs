@@ -140,7 +140,7 @@ namespace MultiplayerARPG
                     {
                         // Talk to NPC
                         SelectedEntity = targetNpc;
-                        PlayerCharacterEntity.RequestNpcActivate(targetNpc.ObjectId);
+                        PlayerCharacterEntity.CallServerNpcActivate(targetNpc.ObjectId);
                     }
                     else if (targetBuilding)
                     {
@@ -151,12 +151,12 @@ namespace MultiplayerARPG
                     else if (targetVehicle)
                     {
                         // Enter vehicle
-                        PlayerCharacterEntity.RequestEnterVehicle(targetVehicle.ObjectId);
+                        PlayerCharacterEntity.CallServerEnterVehicle(targetVehicle.ObjectId);
                     }
                     else if (targetWarpPortal)
                     {
                         // Enter warp, For some warp portals that `warpImmediatelyWhenEnter` is FALSE
-                        PlayerCharacterEntity.RequestEnterWarp(targetWarpPortal.ObjectId);
+                        PlayerCharacterEntity.CallServerEnterWarp(targetWarpPortal.ObjectId);
                     }
                 }
                 // Pick up nearby items
@@ -166,7 +166,7 @@ namespace MultiplayerARPG
                     if (ItemDropEntityDetector.itemDrops.Count > 0)
                         targetItemDrop = ItemDropEntityDetector.itemDrops[0];
                     if (targetItemDrop != null)
-                        PlayerCharacterEntity.RequestPickupItem(targetItemDrop.ObjectId);
+                        PlayerCharacterEntity.CallServerPickupItem(targetItemDrop.ObjectId);
                 }
                 // Reload
                 if (InputManager.GetButtonDown("Reload"))
@@ -177,12 +177,12 @@ namespace MultiplayerARPG
                 if (InputManager.GetButtonDown("ExitVehicle"))
                 {
                     // Exit vehicle
-                    PlayerCharacterEntity.RequestExitVehicle();
+                    PlayerCharacterEntity.CallServerExitVehicle();
                 }
                 if (InputManager.GetButtonDown("SwitchEquipWeaponSet"))
                 {
                     // Switch equip weapon set
-                    PlayerCharacterEntity.RequestSwitchEquipWeaponSet((byte)(PlayerCharacterEntity.EquipWeaponSet + 1));
+                    PlayerCharacterEntity.CallServerSwitchEquipWeaponSet((byte)(PlayerCharacterEntity.EquipWeaponSet + 1));
                 }
                 if (InputManager.GetButtonDown("Sprint"))
                 {
@@ -246,7 +246,7 @@ namespace MultiplayerARPG
         {
             if (!ConstructingBuildingEntity)
             {
-                if (PlayerCharacterEntity.RequestAttack(isLeftHandAttacking))
+                if (PlayerCharacterEntity.CallServerAttack(isLeftHandAttacking))
                     isLeftHandAttacking = !isLeftHandAttacking;
             }
         }
@@ -287,9 +287,9 @@ namespace MultiplayerARPG
         {
             // Reload ammo at server
             if (!PlayerCharacterEntity.EquipWeapons.rightHand.IsAmmoFull())
-                PlayerCharacterEntity.RequestReload(false);
+                PlayerCharacterEntity.CallServerReload(false);
             else if (!PlayerCharacterEntity.EquipWeapons.leftHand.IsAmmoFull())
-                PlayerCharacterEntity.RequestReload(true);
+                PlayerCharacterEntity.CallServerReload(true);
         }
 
         public override void UseHotkey(HotkeyType type, string relateId, Vector3? aimPosition)
@@ -318,7 +318,7 @@ namespace MultiplayerARPG
             bool isAttackSkill = skill.IsAttack();
             if (!aimPosition.HasValue)
             {
-                if (PlayerCharacterEntity.RequestUseSkill(skill.DataId, isLeftHandAttacking) && isAttackSkill)
+                if (PlayerCharacterEntity.CallServerUseSkill(skill.DataId, isLeftHandAttacking) && isAttackSkill)
                 {
                     // Requested to use attack skill then change attacking hand
                     isLeftHandAttacking = !isLeftHandAttacking;
@@ -326,7 +326,7 @@ namespace MultiplayerARPG
             }
             else
             {
-                if (PlayerCharacterEntity.RequestUseSkill(skill.DataId, isLeftHandAttacking, aimPosition.Value) && isAttackSkill)
+                if (PlayerCharacterEntity.CallServerUseSkill(skill.DataId, isLeftHandAttacking, aimPosition.Value) && isAttackSkill)
                 {
                     // Requested to use attack skill then change attacking hand
                     isLeftHandAttacking = !isLeftHandAttacking;
@@ -377,7 +377,7 @@ namespace MultiplayerARPG
                 bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack();
                 if (!aimPosition.HasValue)
                 {
-                    if (PlayerCharacterEntity.RequestUseSkillItem((short)itemIndex, isLeftHandAttacking) && isAttackSkill)
+                    if (PlayerCharacterEntity.CallServerUseSkillItem((short)itemIndex, isLeftHandAttacking) && isAttackSkill)
                     {
                         // Requested to use attack skill then change attacking hand
                         isLeftHandAttacking = !isLeftHandAttacking;
@@ -385,7 +385,7 @@ namespace MultiplayerARPG
                 }
                 else
                 {
-                    if (PlayerCharacterEntity.RequestUseSkillItem((short)itemIndex, isLeftHandAttacking, aimPosition.Value) && isAttackSkill)
+                    if (PlayerCharacterEntity.CallServerUseSkillItem((short)itemIndex, isLeftHandAttacking, aimPosition.Value) && isAttackSkill)
                     {
                         // Requested to use attack skill then change attacking hand
                         isLeftHandAttacking = !isLeftHandAttacking;
@@ -399,7 +399,7 @@ namespace MultiplayerARPG
             }
             else if (item.IsUsable())
             {
-                PlayerCharacterEntity.RequestUseItem((short)itemIndex);
+                PlayerCharacterEntity.CallServerUseItem((short)itemIndex);
             }
         }
 
