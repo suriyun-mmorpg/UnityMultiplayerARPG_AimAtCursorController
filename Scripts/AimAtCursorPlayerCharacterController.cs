@@ -449,7 +449,7 @@ namespace MultiplayerARPG
         public void FindAndSetBuildingAreaByAxes(Vector2 aimAxes)
         {
             int tempCount = 0;
-            Vector3 tempVector3 = MovementTransform.position + (GameplayUtils.GetDirectionByAxes(CacheGameplayCameraTransform, aimAxes.x, aimAxes.y) * ConstructingBuildingEntity.buildDistance);
+            Vector3 tempVector3 = CacheTransform.position + (GameplayUtils.GetDirectionByAxes(CacheGameplayCameraTransform, aimAxes.x, aimAxes.y) * ConstructingBuildingEntity.buildDistance);
             switch (CurrentGameInstance.DimensionType)
             {
                 case DimensionType.Dimension3D:
@@ -494,8 +494,8 @@ namespace MultiplayerARPG
             {
                 tempTransform = GetRaycastTransform(tempCounter);
                 tempVector3 = GetRaycastPoint(tempCounter);
-                tempOffset = tempVector3 - MovementTransform.position;
-                tempVector3 = MovementTransform.position + Vector3.ClampMagnitude(tempOffset, ConstructingBuildingEntity.buildDistance);
+                tempOffset = tempVector3 - CacheTransform.position;
+                tempVector3 = CacheTransform.position + Vector3.ClampMagnitude(tempOffset, ConstructingBuildingEntity.buildDistance);
 
                 buildingArea = tempTransform.GetComponent<BuildingArea>();
                 if (buildingArea == null ||
