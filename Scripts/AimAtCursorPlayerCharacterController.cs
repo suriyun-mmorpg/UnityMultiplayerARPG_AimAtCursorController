@@ -8,9 +8,9 @@ namespace MultiplayerARPG
     {
         [Header("Camera Controls Prefabs")]
         [SerializeField]
-        private FollowCameraControls gameplayCameraPrefab;
+        protected FollowCameraControls gameplayCameraPrefab;
         [SerializeField]
-        private FollowCameraControls minimapCameraPrefab;
+        protected FollowCameraControls minimapCameraPrefab;
 
         [Header("Building Settings")]
         [SerializeField]
@@ -270,17 +270,99 @@ namespace MultiplayerARPG
 
         protected void UpdateLookInput()
         {
+            bool foundTargetEntity = false;
             bool isMobile = InputManager.useMobileInputOnNonMobile || Application.isMobilePlatform;
             Vector2 lookDirection;
             if (isMobile)
             {
                 // Turn character by joystick
                 lookDirection = new Vector2(InputManager.GetAxis("Mouse X", false), InputManager.GetAxis("Mouse Y", false));
+                Transform tempTransform;
+                IGameEntity tempGameEntity;
+                Vector3 tempTargetPosition;
+                int pickedCount;
+                if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
+                    pickedCount = physicFunctions.Raycast(PlayerCharacterEntity.MeleeDamageTransform.position, lookDirection, 100f, Physics.DefaultRaycastLayers);
+                else
+                    pickedCount = physicFunctions.Raycast(PlayerCharacterEntity.MeleeDamageTransform.position, new Vector3(lookDirection.x, 0, lookDirection.y), 100f, Physics.DefaultRaycastLayers);
+                for (int i = 0; i < pickedCount; ++i)
+                {
+                    tempTransform = physicFunctions.GetRaycastTransform(i);
+                    tempGameEntity = tempTransform.GetComponent<IGameEntity>();
+                    if (tempGameEntity != null)
+                    {
+                        foundTargetEntity = true;
+                        CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
+                        PlayerCharacterEntity.SetTargetEntity(tempGameEntity.Entity);
+                        SelectedEntity = tempGameEntity.Entity;
+                        if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
+                        {
+                            if (tempGameEntity is IDamageableEntity)
+                                tempTargetPosition = (tempGameEntity as IDamageableEntity).OpponentAimTransform.position;
+                            else
+                                tempTargetPosition = tempGameEntity.GetTransform().position;
+                            if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
+                                lookDirection = (tempTargetPosition - CacheTransform.position).normalized;
+                            else
+                                lookDirection = (XZ(tempTargetPosition) - XZ(CacheTransform.position)).normalized;
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
+                            lookDirection = (physicFunctions.GetRaycastPoint(i) - CacheTransform.position).normalized;
+                        else
+                            lookDirection = (XZ(physicFunctions.GetRaycastPoint(i)) - XZ(CacheTransform.position)).normalized;
+                    }
+                }
             }
             else
             {
                 // Turn character follow cursor
                 lookDirection = (InputManager.MousePosition() - new Vector3(Screen.width, Screen.height) * 0.5f).normalized;
+                // Pick on object by mouse position
+                Transform tempTransform;
+                IGameEntity tempGameEntity;
+                Vector3 tempTargetPosition;
+                int pickedCount = physicFunctions.RaycastPickObjects(CacheGameplayCamera, InputManager.MousePosition(), Physics.DefaultRaycastLayers, 100f, out _);
+                for (int i = 0; i < pickedCount; ++i)
+                {
+                    tempTransform = physicFunctions.GetRaycastTransform(i);
+                    tempGameEntity = tempTransform.GetComponent<IGameEntity>();
+                    if (tempGameEntity != null)
+                    {
+                        foundTargetEntity = true;
+                        CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
+                        PlayerCharacterEntity.SetTargetEntity(tempGameEntity.Entity);
+                        SelectedEntity = tempGameEntity.Entity;
+                        if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
+                        {
+                            if (tempGameEntity is IDamageableEntity)
+                                tempTargetPosition = (tempGameEntity as IDamageableEntity).OpponentAimTransform.position;
+                            else
+                                tempTargetPosition = tempGameEntity.GetTransform().position;
+                            if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
+                                lookDirection = (tempTargetPosition - CacheTransform.position).normalized;
+                            else
+                                lookDirection = (XZ(tempTargetPosition) - XZ(CacheTransform.position)).normalized;
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
+                            lookDirection = (physicFunctions.GetRaycastPoint(i) - CacheTransform.position).normalized;
+                        else
+                            lookDirection = (XZ(physicFunctions.GetRaycastPoint(i)) - XZ(CacheTransform.position)).normalized;
+                    }
+                }
+            }
+            if (!foundTargetEntity)
+            {
+                CacheUISceneGameplay.SetTargetEntity(null);
+                PlayerCharacterEntity.SetTargetEntity(null);
+                SelectedEntity = null;
             }
 
             // Turn character
@@ -491,7 +573,7 @@ namespace MultiplayerARPG
         /// <param name="count"></param>
         /// <param name="raycastPosition"></param>
         /// <returns></returns>
-        private bool LoopSetBuildingArea(int count, Vector3 raycastPosition)
+        protected bool LoopSetBuildingArea(int count, Vector3 raycastPosition)
         {
             IGameEntity gameEntity;
             BuildingArea buildingArea;
@@ -537,7 +619,7 @@ namespace MultiplayerARPG
             return false;
         }
 
-        private Vector3 GetBuildingPlacePosition(Vector3 position)
+        protected Vector3 GetBuildingPlacePosition(Vector3 position)
         {
             if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
             {
@@ -552,7 +634,7 @@ namespace MultiplayerARPG
             return position;
         }
 
-        private Quaternion GetBuildingPlaceRotation(float angles)
+        protected Quaternion GetBuildingPlaceRotation(float angles)
         {
             Vector3 eulerAngles = Vector3.zero;
             if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
@@ -569,6 +651,11 @@ namespace MultiplayerARPG
                 }
             }
             return Quaternion.Euler(eulerAngles);
+        }
+
+        protected Vector2 XZ(Vector3 vector3)
+        {
+            return new Vector2(vector3.x, vector3.z);
         }
     }
 }
