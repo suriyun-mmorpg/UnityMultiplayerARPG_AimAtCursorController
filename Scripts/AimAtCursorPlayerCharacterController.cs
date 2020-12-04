@@ -475,21 +475,23 @@ namespace MultiplayerARPG
 
         public void FindAndSetBuildingAreaByAxes(Vector2 aimAxes)
         {
-            Vector3 tempVector3 = CacheTransform.position + (GameplayUtils.GetDirectionByAxes(CacheGameplayCameraTransform, aimAxes.x, aimAxes.y) * ConstructingBuildingEntity.BuildDistance);
-            LoopSetBuildingArea(physicFunctions.Raycast(tempVector3, Vector3.down, 100f, CurrentGameInstance.GetBuildLayerMask()));
+            Vector3 raycastPosition = CacheTransform.position + (GameplayUtils.GetDirectionByAxes(CacheGameplayCameraTransform, aimAxes.x, aimAxes.y) * ConstructingBuildingEntity.BuildDistance);
+            LoopSetBuildingArea(physicFunctions.RaycastDown(raycastPosition, CurrentGameInstance.GetBuildLayerMask()), raycastPosition);
         }
 
         public void FindAndSetBuildingAreaByMousePosition()
         {
-            LoopSetBuildingArea(physicFunctions.RaycastPickObjects(CacheGameplayCamera, InputManager.MousePosition(), CurrentGameInstance.GetBuildLayerMask(), 100f, out _));
+            Vector3 worldPosition2D;
+            LoopSetBuildingArea(physicFunctions.RaycastPickObjects(CacheGameplayCamera, InputManager.MousePosition(), CurrentGameInstance.GetBuildLayerMask(), 100f, out worldPosition2D), worldPosition2D);
         }
 
         /// <summary>
         /// Return true if found building area
         /// </summary>
         /// <param name="count"></param>
+        /// <param name="raycastPosition"></param>
         /// <returns></returns>
-        private bool LoopSetBuildingArea(int count)
+        private bool LoopSetBuildingArea(int count, Vector3 raycastPosition)
         {
             IGameEntity gameEntity;
             BuildingArea buildingArea;
@@ -499,7 +501,8 @@ namespace MultiplayerARPG
             {
                 tempTransform = physicFunctions.GetRaycastTransform(tempCounter);
                 tempVector3 = GameplayUtils.ClampPosition(CacheTransform.position, physicFunctions.GetRaycastPoint(tempCounter), ConstructingBuildingEntity.BuildDistance);
-                tempVector3.y = physicFunctions.GetRaycastPoint(tempCounter).y;
+                if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
+                    tempVector3.y = physicFunctions.GetRaycastPoint(tempCounter).y;
 
                 buildingArea = tempTransform.GetComponent<BuildingArea>();
                 if (buildingArea == null)
@@ -526,22 +529,45 @@ namespace MultiplayerARPG
                 ConstructingBuildingEntity.Position = GetBuildingPlacePosition(tempVector3);
                 return true;
             }
+            if (CurrentGameInstance.DimensionType == DimensionType.Dimension2D)
+            {
+                ConstructingBuildingEntity.BuildingArea = null;
+                ConstructingBuildingEntity.Position = GetBuildingPlacePosition(raycastPosition);
+            }
             return false;
         }
 
         private Vector3 GetBuildingPlacePosition(Vector3 position)
         {
-            if (buildGridSnap)
-                position = new Vector3(Mathf.Round(position.x / buildGridSize) * buildGridSize, position.y, Mathf.Round(position.z / buildGridSize) * buildGridSize) + buildGridOffsets;
+            if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
+            {
+                if (buildGridSnap)
+                    position = new Vector3(Mathf.Round(position.x / buildGridSize) * buildGridSize, position.y, Mathf.Round(position.z / buildGridSize) * buildGridSize) + buildGridOffsets;
+            }
+            else
+            {
+                if (buildGridSnap)
+                    position = new Vector3(Mathf.Round(position.x / buildGridSize) * buildGridSize, Mathf.Round(position.y / buildGridSize) * buildGridSize) + buildGridOffsets;
+            }
             return position;
         }
 
-        private Quaternion GetBuildingPlaceRotation(float anglesY)
+        private Quaternion GetBuildingPlaceRotation(float angles)
         {
             Vector3 eulerAngles = Vector3.zero;
-            // Make Y rotation set to 0, 90, 180
-            if (buildRotationSnap)
-                eulerAngles.y = Mathf.Round(anglesY / 90) * 90;
+            if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
+            {
+                if (buildRotationSnap)
+                {
+                    // Make Y rotation set to 0, 90, 180
+                    eulerAngles.y = Mathf.Round(angles / 90) * 90;
+                }
+                else
+                {
+                    // Rotate by set angles
+                    eulerAngles.y = angles;
+                }
+            }
             return Quaternion.Euler(eulerAngles);
         }
     }
