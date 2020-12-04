@@ -374,10 +374,7 @@ namespace MultiplayerARPG
                 }
                 else
                 {
-                    float rotY = (Quaternion.LookRotation(
-                        new Vector3(lookDirection.x, 0, lookDirection.y)).eulerAngles.y +
-                        CacheGameplayCameraControls.CacheCameraTransform.eulerAngles.y);
-                    PlayerCharacterEntity.SetLookRotation(Quaternion.Euler(0, rotY, 0));
+                    PlayerCharacterEntity.SetLookRotation(Quaternion.LookRotation(new Vector3(lookDirection.x, 0, lookDirection.y)));
                 }
             }
         }
