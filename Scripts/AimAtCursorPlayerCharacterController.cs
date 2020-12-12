@@ -452,7 +452,14 @@ namespace MultiplayerARPG
                     out equipWeaponSet,
                     out characterItem))
                 {
-                    PlayerCharacterEntity.RequestUnEquipItem(inventoryType, (short)itemIndex, equipWeaponSet);
+                    GameInstance.ClientInventoryHandlers.RequestUnEquipItem(
+                        PlayerCharacterEntity.Id,
+                        inventoryType,
+                        (short)itemIndex,
+                        equipWeaponSet,
+                        -1,
+                        UIInventoryResponses.ResponseUnEquipArmor,
+                        UIInventoryResponses.ResponseUnEquipWeapon);
                     return;
                 }
                 item = characterItem.GetItem();
@@ -466,7 +473,11 @@ namespace MultiplayerARPG
 
             if (item.IsEquipment())
             {
-                PlayerCharacterEntity.CallServerEquipItem((short)itemIndex);
+                GameInstance.ClientInventoryHandlers.RequestEquipItem(
+                        PlayerCharacterEntity,
+                        (short)itemIndex,
+                        UIInventoryResponses.ResponseEquipArmor,
+                        UIInventoryResponses.ResponseEquipWeapon);
             }
             else if (item.IsSkill())
             {
