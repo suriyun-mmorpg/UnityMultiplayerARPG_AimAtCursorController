@@ -12,6 +12,10 @@ namespace MultiplayerARPG
         [SerializeField]
         protected FollowCameraControls minimapCameraPrefab;
 
+        [Header("Controller Settings")]
+        [SerializeField]
+        protected bool doNotTurnToPointingEntity;
+
         [Header("Building Settings")]
         [SerializeField]
         protected bool buildGridSnap;
@@ -23,6 +27,8 @@ namespace MultiplayerARPG
         protected bool buildRotationSnap;
         [SerializeField]
         protected float buildRotateAngle = 45f;
+        [SerializeField]
+        protected float buildRotateSpeed = 200f;
 
         protected bool isLeftHandAttacking;
         protected bool isSprinting;
@@ -345,19 +351,25 @@ namespace MultiplayerARPG
                                 tempTargetPosition = (tempGameEntity as IDamageableEntity).OpponentAimTransform.position;
                             else
                                 tempTargetPosition = tempGameEntity.GetTransform().position;
-                            if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
-                                lookDirection = (tempTargetPosition - CacheTransform.position).normalized;
-                            else
-                                lookDirection = (XZ(tempTargetPosition) - XZ(CacheTransform.position)).normalized;
+                            if (!doNotTurnToPointingEntity)
+                            {
+                                if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
+                                    lookDirection = (tempTargetPosition - CacheTransform.position).normalized;
+                                else
+                                    lookDirection = (XZ(tempTargetPosition) - XZ(CacheTransform.position)).normalized;
+                            }
                         }
                         break;
                     }
                     else
                     {
-                        if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
-                            lookDirection = (physicFunctions.GetRaycastPoint(i) - CacheTransform.position).normalized;
-                        else
-                            lookDirection = (XZ(physicFunctions.GetRaycastPoint(i)) - XZ(CacheTransform.position)).normalized;
+                        if (!doNotTurnToPointingEntity)
+                        {
+                            if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
+                                lookDirection = (physicFunctions.GetRaycastPoint(i) - CacheTransform.position).normalized;
+                            else
+                                lookDirection = (XZ(physicFunctions.GetRaycastPoint(i)) - XZ(CacheTransform.position)).normalized;
+                        }
                     }
                 }
             }
@@ -546,11 +558,30 @@ namespace MultiplayerARPG
                 buildYRotate = 0f;
             }
             // Rotate by keys
-            if (InputManager.GetButtonDown("RotateLeft"))
-                buildYRotate -= buildRotateAngle;
-            else if (InputManager.GetButtonDown("RotateRight"))
-                buildYRotate += buildRotateAngle;
-            ConstructingBuildingEntity.Rotation = GetBuildingPlaceRotation(buildYRotate);
+            Vector3 buildingAngles = Vector3.zero;
+            if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
+            {
+                if (buildRotationSnap)
+                {
+                    if (InputManager.GetButtonDown("RotateLeft"))
+                        buildYRotate -= buildRotateAngle;
+                    if (InputManager.GetButtonDown("RotateRight"))
+                        buildYRotate += buildRotateAngle;
+                    // Make Y rotation set to 0, 90, 180
+                    buildingAngles.y = buildYRotate = Mathf.Round(buildYRotate / buildRotateAngle) * buildRotateAngle;
+                }
+                else
+                {
+                    float deltaTime = Time.deltaTime;
+                    if (InputManager.GetButton("RotateLeft"))
+                        buildYRotate -= buildRotateSpeed * deltaTime;
+                    if (InputManager.GetButton("RotateRight"))
+                        buildYRotate += buildRotateSpeed * deltaTime;
+                    // Rotate by set angles
+                    buildingAngles.y = buildYRotate;
+                }
+            }
+            ConstructingBuildingEntity.Rotation = Quaternion.Euler(buildingAngles);
             // Find position to place building
             if (InputManager.useMobileInputOnNonMobile || Application.isMobilePlatform)
                 FindAndSetBuildingAreaByAxes(aimAxes);
@@ -642,25 +673,6 @@ namespace MultiplayerARPG
                     position = new Vector3(Mathf.Round(position.x / buildGridSize) * buildGridSize, Mathf.Round(position.y / buildGridSize) * buildGridSize) + buildGridOffsets;
             }
             return position;
-        }
-
-        protected Quaternion GetBuildingPlaceRotation(float angles)
-        {
-            Vector3 eulerAngles = Vector3.zero;
-            if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
-            {
-                if (buildRotationSnap)
-                {
-                    // Make Y rotation set to 0, 90, 180
-                    eulerAngles.y = Mathf.Round(angles / 90) * 90;
-                }
-                else
-                {
-                    // Rotate by set angles
-                    eulerAngles.y = angles;
-                }
-            }
-            return Quaternion.Euler(eulerAngles);
         }
 
         protected Vector2 XZ(Vector3 vector3)
