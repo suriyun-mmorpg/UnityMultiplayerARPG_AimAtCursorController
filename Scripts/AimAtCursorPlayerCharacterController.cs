@@ -42,6 +42,7 @@ namespace MultiplayerARPG
         protected VehicleEntity targetVehicle;
         protected WarpPortalEntity targetWarpPortal;
         protected HarvestableEntity targetHarvestable;
+        protected ItemsContainerEntity targetItemsContainer;
 
         public FollowCameraControls CacheGameplayCameraControls { get; protected set; }
         public FollowCameraControls CacheMinimapCameraControls { get; protected set; }
@@ -78,6 +79,7 @@ namespace MultiplayerARPG
             ItemDropEntityDetector = tempGameObject.AddComponent<NearbyEntityDetector>();
             ItemDropEntityDetector.detectingRadius = CurrentGameInstance.pickUpItemDistance;
             ItemDropEntityDetector.findItemDrop = true;
+            ItemDropEntityDetector.findItemsContainer = true;
             // Initial physic functions
             if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
                 physicFunctions = new PhysicFunctions(512);
@@ -152,6 +154,9 @@ namespace MultiplayerARPG
                     targetWarpPortal = null;
                     if (ActivatableEntityDetector.warpPortals.Count > 0)
                         targetWarpPortal = ActivatableEntityDetector.warpPortals[0];
+                    targetItemsContainer = null;
+                    if (ItemDropEntityDetector.itemsContainers.Count > 0)
+                        targetItemsContainer = ItemDropEntityDetector.itemsContainers[0];
                     // Priority Player -> Npc -> Buildings
                     if (targetPlayer && CacheUISceneGameplay)
                     {
@@ -180,6 +185,11 @@ namespace MultiplayerARPG
                     {
                         // Enter warp, For some warp portals that `warpImmediatelyWhenEnter` is FALSE
                         PlayerCharacterEntity.CallServerEnterWarp(targetWarpPortal.ObjectId);
+                    }
+                    else if (targetItemsContainer)
+                    {
+                        // Show items
+                        BaseUISceneGameplay.Singleton.ShowItemsContainerDialog(targetItemsContainer);
                     }
                 }
                 // Pick up nearby items
