@@ -282,7 +282,7 @@ namespace MultiplayerARPG
         {
             if (!ConstructingBuildingEntity)
             {
-                if (PlayerCharacterEntity.CallServerAttack(isLeftHandAttacking))
+                if (PlayerCharacterEntity.CallServerAttack(isLeftHandAttacking, new AimPosition()))
                     isLeftHandAttacking = !isLeftHandAttacking;
             }
         }
@@ -437,22 +437,12 @@ namespace MultiplayerARPG
                 return;
 
             bool isAttackSkill = skill.IsAttack();
-            if (!aimPosition.HasValue)
-            {
-                if (PlayerCharacterEntity.CallServerUseSkill(skill.DataId, isLeftHandAttacking) && isAttackSkill)
-                {
-                    // Requested to use attack skill then change attacking hand
-                    isLeftHandAttacking = !isLeftHandAttacking;
-                }
-            }
-            else
-            {
-                if (PlayerCharacterEntity.CallServerUseSkill(skill.DataId, isLeftHandAttacking, aimPosition.Value) && isAttackSkill)
-                {
-                    // Requested to use attack skill then change attacking hand
-                    isLeftHandAttacking = !isLeftHandAttacking;
-                }
-            }
+            AimPosition skillAimPosition = new AimPosition();
+            skillAimPosition.hasValue = aimPosition.HasValue;
+            if (skillAimPosition.hasValue)
+                skillAimPosition.value = aimPosition.Value;
+            if (PlayerCharacterEntity.CallServerUseSkill(skill.DataId, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
+                isLeftHandAttacking = !isLeftHandAttacking;
         }
 
         protected void UseItem(string id, Vector3? aimPosition)
@@ -506,22 +496,12 @@ namespace MultiplayerARPG
             else if (item.IsSkill())
             {
                 bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack();
-                if (!aimPosition.HasValue)
-                {
-                    if (PlayerCharacterEntity.CallServerUseSkillItem((short)itemIndex, isLeftHandAttacking) && isAttackSkill)
-                    {
-                        // Requested to use attack skill then change attacking hand
-                        isLeftHandAttacking = !isLeftHandAttacking;
-                    }
-                }
-                else
-                {
-                    if (PlayerCharacterEntity.CallServerUseSkillItem((short)itemIndex, isLeftHandAttacking, aimPosition.Value) && isAttackSkill)
-                    {
-                        // Requested to use attack skill then change attacking hand
-                        isLeftHandAttacking = !isLeftHandAttacking;
-                    }
-                }
+                AimPosition skillAimPosition = new AimPosition();
+                skillAimPosition.hasValue = aimPosition.HasValue;
+                if (skillAimPosition.hasValue)
+                    skillAimPosition.value = aimPosition.Value;
+                if (PlayerCharacterEntity.CallServerUseSkillItem((short)itemIndex, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
+                    isLeftHandAttacking = !isLeftHandAttacking;
             }
             else if (item.IsBuilding())
             {
