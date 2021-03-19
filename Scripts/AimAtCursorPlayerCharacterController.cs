@@ -442,16 +442,7 @@ namespace MultiplayerARPG
                 return;
 
             bool isAttackSkill = skill.IsAttack();
-            AimPosition skillAimPosition = new AimPosition();
-            skillAimPosition.hasValue = aimPosition.HasValue;
-            if (skillAimPosition.hasValue)
-            {
-                skillAimPosition.value = aimPosition.Value;
-            }
-            else if (isAttackSkill)
-            {
-                skillAimPosition.value = PlayerCharacterEntity.GetDefaultAttackAimPosition(ref isLeftHandAttacking);
-            }
+            AimPosition skillAimPosition = AimPosition.CreateForSkill(PlayerCharacterEntity, aimPosition, isAttackSkill, ref isLeftHandAttacking);
             if (PlayerCharacterEntity.CallServerUseSkill(skill.DataId, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
             {
                 isLeftHandAttacking = !isLeftHandAttacking;
@@ -509,16 +500,7 @@ namespace MultiplayerARPG
             else if (item.IsSkill())
             {
                 bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack();
-                AimPosition skillAimPosition = new AimPosition();
-                skillAimPosition.hasValue = aimPosition.HasValue;
-                if (skillAimPosition.hasValue)
-                {
-                    skillAimPosition.value = aimPosition.Value;
-                }
-                else if (isAttackSkill)
-                {
-                    skillAimPosition.value = PlayerCharacterEntity.GetDefaultAttackAimPosition(ref isLeftHandAttacking);
-                }
+                AimPosition skillAimPosition = AimPosition.CreateForSkill(PlayerCharacterEntity, aimPosition, isAttackSkill, ref isLeftHandAttacking);
                 if (PlayerCharacterEntity.CallServerUseSkillItem((short)itemIndex, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
                 {
                     isLeftHandAttacking = !isLeftHandAttacking;
