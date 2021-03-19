@@ -282,7 +282,12 @@ namespace MultiplayerARPG
         {
             if (!ConstructingBuildingEntity)
             {
-                if (PlayerCharacterEntity.CallServerAttack(isLeftHandAttacking, new AimPosition()))
+                AimPosition aimPosition = new AimPosition()
+                {
+                    hasValue = true,
+                    value = PlayerCharacterEntity.GetDefaultAttackAimPosition(ref isLeftHandAttacking),
+                };
+                if (PlayerCharacterEntity.CallServerAttack(isLeftHandAttacking, aimPosition))
                     isLeftHandAttacking = !isLeftHandAttacking;
             }
         }
@@ -440,9 +445,17 @@ namespace MultiplayerARPG
             AimPosition skillAimPosition = new AimPosition();
             skillAimPosition.hasValue = aimPosition.HasValue;
             if (skillAimPosition.hasValue)
+            {
                 skillAimPosition.value = aimPosition.Value;
+            }
+            else if (isAttackSkill)
+            {
+                skillAimPosition.value = PlayerCharacterEntity.GetDefaultAttackAimPosition(ref isLeftHandAttacking);
+            }
             if (PlayerCharacterEntity.CallServerUseSkill(skill.DataId, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
+            {
                 isLeftHandAttacking = !isLeftHandAttacking;
+            }
         }
 
         protected void UseItem(string id, Vector3? aimPosition)
@@ -499,9 +512,17 @@ namespace MultiplayerARPG
                 AimPosition skillAimPosition = new AimPosition();
                 skillAimPosition.hasValue = aimPosition.HasValue;
                 if (skillAimPosition.hasValue)
+                {
                     skillAimPosition.value = aimPosition.Value;
+                }
+                else if (isAttackSkill)
+                {
+                    skillAimPosition.value = PlayerCharacterEntity.GetDefaultAttackAimPosition(ref isLeftHandAttacking);
+                }
                 if (PlayerCharacterEntity.CallServerUseSkillItem((short)itemIndex, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
+                {
                     isLeftHandAttacking = !isLeftHandAttacking;
+                }
             }
             else if (item.IsBuilding())
             {
