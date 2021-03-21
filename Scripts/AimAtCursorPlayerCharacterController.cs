@@ -233,11 +233,11 @@ namespace MultiplayerARPG
                     ReloadAmmo();
                 }
             }
-            // Update inputs
+
             UpdateLookInput();
             UpdateWASDInput();
-            // Set sprinting state
             PlayerCharacterEntity.SetExtraMovement(isSprinting ? ExtraMovementState.IsSprinting : ExtraMovementState.None);
+            PlayerCharacterEntity.AimPosition = PlayerCharacterEntity.GetDefaultAttackAimPosition(ref isLeftHandAttacking);
         }
 
         protected void UpdateWASDInput()
@@ -282,12 +282,7 @@ namespace MultiplayerARPG
         {
             if (!ConstructingBuildingEntity)
             {
-                AimPosition aimPosition = new AimPosition()
-                {
-                    hasValue = true,
-                    value = PlayerCharacterEntity.GetDefaultAttackAimPosition(ref isLeftHandAttacking),
-                };
-                if (PlayerCharacterEntity.CallServerAttack(isLeftHandAttacking, aimPosition))
+                if (PlayerCharacterEntity.CallServerAttack(isLeftHandAttacking))
                     isLeftHandAttacking = !isLeftHandAttacking;
             }
         }
@@ -442,7 +437,7 @@ namespace MultiplayerARPG
                 return;
 
             bool isAttackSkill = skill.IsAttack();
-            AimPosition skillAimPosition = AimPosition.CreateForSkill(PlayerCharacterEntity, aimPosition, isAttackSkill, ref isLeftHandAttacking);
+            AimPosition skillAimPosition = AimPosition.Create(aimPosition);
             if (PlayerCharacterEntity.CallServerUseSkill(skill.DataId, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
             {
                 isLeftHandAttacking = !isLeftHandAttacking;
@@ -500,7 +495,7 @@ namespace MultiplayerARPG
             else if (item.IsSkill())
             {
                 bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack();
-                AimPosition skillAimPosition = AimPosition.CreateForSkill(PlayerCharacterEntity, aimPosition, isAttackSkill, ref isLeftHandAttacking);
+                AimPosition skillAimPosition = AimPosition.Create(aimPosition);
                 if (PlayerCharacterEntity.CallServerUseSkillItem((short)itemIndex, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
                 {
                     isLeftHandAttacking = !isLeftHandAttacking;
