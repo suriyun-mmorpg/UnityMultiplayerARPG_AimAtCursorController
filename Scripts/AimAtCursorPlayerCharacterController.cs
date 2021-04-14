@@ -593,7 +593,7 @@ namespace MultiplayerARPG
         public void FindAndSetBuildingAreaByMousePosition()
         {
             Vector3 worldPosition2D;
-            LoopSetBuildingArea(physicFunctions.RaycastPickObjects(CacheGameplayCamera, InputManager.MousePosition(), CurrentGameInstance.GetBuildLayerMask(), 100f, out worldPosition2D), worldPosition2D);
+            LoopSetBuildingArea(physicFunctions.RaycastPickObjects(CacheGameplayCamera, InputManager.MousePosition(), CurrentGameInstance.GetBuildLayerMask(), Vector3.Distance(CacheGameplayCameraTransform.position, MovementTransform.position) + ConstructingBuildingEntity.BuildDistance, out worldPosition2D), worldPosition2D);
         }
 
         /// <summary>
@@ -604,6 +604,7 @@ namespace MultiplayerARPG
         /// <returns></returns>
         protected bool LoopSetBuildingArea(int count, Vector3 raycastPosition)
         {
+            ConstructingBuildingEntity.HitSurface = false;
             IGameEntity gameEntity;
             BuildingArea buildingArea;
             Transform tempTransform;
@@ -611,7 +612,7 @@ namespace MultiplayerARPG
             for (int tempCounter = 0; tempCounter < count; ++tempCounter)
             {
                 tempTransform = physicFunctions.GetRaycastTransform(tempCounter);
-                tempVector3 = GameplayUtils.ClampPosition(CacheTransform.position, physicFunctions.GetRaycastPoint(tempCounter), ConstructingBuildingEntity.BuildDistance);
+                tempVector3 = physicFunctions.GetRaycastPoint(tempCounter);
                 if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
                     tempVector3.y = physicFunctions.GetRaycastPoint(tempCounter).y;
 
@@ -623,6 +624,7 @@ namespace MultiplayerARPG
                     {
                         // Hit something and it is not part of constructing building entity, assume that it is ground
                         ConstructingBuildingEntity.BuildingArea = null;
+                        ConstructingBuildingEntity.HitSurface = true;
                         ConstructingBuildingEntity.Position = GetBuildingPlacePosition(tempVector3);
                         break;
                     }
@@ -637,12 +639,14 @@ namespace MultiplayerARPG
                 }
 
                 ConstructingBuildingEntity.BuildingArea = buildingArea;
+                ConstructingBuildingEntity.HitSurface = true;
                 ConstructingBuildingEntity.Position = GetBuildingPlacePosition(tempVector3);
                 return true;
             }
             if (CurrentGameInstance.DimensionType == DimensionType.Dimension2D)
             {
                 ConstructingBuildingEntity.BuildingArea = null;
+                ConstructingBuildingEntity.HitSurface = false;
                 ConstructingBuildingEntity.Position = GetBuildingPlacePosition(raycastPosition);
             }
             return false;
