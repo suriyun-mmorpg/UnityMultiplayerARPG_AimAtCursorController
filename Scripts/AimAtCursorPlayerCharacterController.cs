@@ -282,7 +282,7 @@ namespace MultiplayerARPG
         {
             if (!ConstructingBuildingEntity)
             {
-                if (PlayerCharacterEntity.CallServerAttack(isLeftHandAttacking))
+                if (PlayerCharacterEntity.Attack(isLeftHandAttacking))
                     isLeftHandAttacking = !isLeftHandAttacking;
             }
         }
@@ -408,9 +408,9 @@ namespace MultiplayerARPG
         {
             // Reload ammo at server
             if (!PlayerCharacterEntity.EquipWeapons.rightHand.IsAmmoFull())
-                PlayerCharacterEntity.CallServerReload(false);
+                PlayerCharacterEntity.Reload(false);
             else if (!PlayerCharacterEntity.EquipWeapons.leftHand.IsAmmoFull())
-                PlayerCharacterEntity.CallServerReload(true);
+                PlayerCharacterEntity.Reload(true);
         }
 
         public override void UseHotkey(HotkeyType type, string relateId, Vector3? aimPosition)
@@ -438,7 +438,7 @@ namespace MultiplayerARPG
 
             bool isAttackSkill = skill.IsAttack();
             AimPosition skillAimPosition = AimPosition.Create(aimPosition);
-            if (PlayerCharacterEntity.CallServerUseSkill(skill.DataId, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
+            if (PlayerCharacterEntity.UseSkill(skill.DataId, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
             {
                 isLeftHandAttacking = !isLeftHandAttacking;
             }
@@ -496,7 +496,7 @@ namespace MultiplayerARPG
             {
                 bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack();
                 AimPosition skillAimPosition = AimPosition.Create(aimPosition);
-                if (PlayerCharacterEntity.CallServerUseSkillItem((short)itemIndex, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
+                if (PlayerCharacterEntity.UseSkillItem((short)itemIndex, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
                 {
                     isLeftHandAttacking = !isLeftHandAttacking;
                 }
