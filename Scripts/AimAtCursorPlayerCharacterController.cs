@@ -237,7 +237,7 @@ namespace MultiplayerARPG
             UpdateLookInput();
             UpdateWASDInput();
             PlayerCharacterEntity.SetExtraMovement(isSprinting ? ExtraMovementState.IsSprinting : ExtraMovementState.None);
-            PlayerCharacterEntity.AimPosition = PlayerCharacterEntity.GetDefaultAttackAimPosition(ref isLeftHandAttacking);
+            PlayerCharacterEntity.AimPosition = PlayerCharacterEntity.GetAttackAimPosition(ref isLeftHandAttacking);
         }
 
         protected void UpdateWASDInput()
@@ -413,7 +413,7 @@ namespace MultiplayerARPG
                 PlayerCharacterEntity.Reload(true);
         }
 
-        public override void UseHotkey(HotkeyType type, string relateId, Vector3? aimPosition)
+        public override void UseHotkey(HotkeyType type, string relateId, AimPosition aimPosition)
         {
             ClearQueueUsingSkill();
             switch (type)
@@ -427,7 +427,7 @@ namespace MultiplayerARPG
             }
         }
 
-        protected void UseSkill(string id, Vector3? aimPosition)
+        protected void UseSkill(string id, AimPosition aimPosition)
         {
             BaseSkill skill;
             short skillLevel;
@@ -437,14 +437,13 @@ namespace MultiplayerARPG
                 return;
 
             bool isAttackSkill = skill.IsAttack();
-            AimPosition skillAimPosition = AimPosition.Create(aimPosition);
-            if (PlayerCharacterEntity.UseSkill(skill.DataId, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
+            if (PlayerCharacterEntity.UseSkill(skill.DataId, isLeftHandAttacking, aimPosition) && isAttackSkill)
             {
                 isLeftHandAttacking = !isLeftHandAttacking;
             }
         }
 
-        protected void UseItem(string id, Vector3? aimPosition)
+        protected void UseItem(string id, AimPosition aimPosition)
         {
             int itemIndex;
             BaseItem item;
@@ -495,8 +494,7 @@ namespace MultiplayerARPG
             else if (item.IsSkill())
             {
                 bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack();
-                AimPosition skillAimPosition = AimPosition.Create(aimPosition);
-                if (PlayerCharacterEntity.UseSkillItem((short)itemIndex, isLeftHandAttacking, skillAimPosition) && isAttackSkill)
+                if (PlayerCharacterEntity.UseSkillItem((short)itemIndex, isLeftHandAttacking, aimPosition) && isAttackSkill)
                 {
                     isLeftHandAttacking = !isLeftHandAttacking;
                 }
@@ -537,7 +535,7 @@ namespace MultiplayerARPG
             return moveDirection;
         }
 
-        public override Vector3? UpdateBuildAimControls(Vector2 aimAxes, BuildingEntity prefab)
+        public override AimPosition UpdateBuildAimControls(Vector2 aimAxes, BuildingEntity prefab)
         {
             // Instantiate constructing building
             if (ConstructingBuildingEntity == null)
@@ -576,7 +574,7 @@ namespace MultiplayerARPG
                 FindAndSetBuildingAreaByAxes(aimAxes);
             else
                 FindAndSetBuildingAreaByMousePosition();
-            return ConstructingBuildingEntity.Position;
+            return AimPosition.CreatePosition(ConstructingBuildingEntity.Position);
         }
 
         public override void FinishBuildAimControls(bool isCancel)
