@@ -15,6 +15,8 @@ namespace MultiplayerARPG
         [Header("Controller Settings")]
         [SerializeField]
         protected bool doNotTurnToPointingEntity;
+        [SerializeField]
+        protected bool setAimPositionToRaycastHitPoint;
 
         [Header("Building Settings")]
         [SerializeField]
@@ -43,6 +45,7 @@ namespace MultiplayerARPG
         protected WarpPortalEntity targetWarpPortal;
         protected HarvestableEntity targetHarvestable;
         protected ItemsContainerEntity targetItemsContainer;
+        protected Vector3 aimTargetPosition;
 
         public FollowCameraControls CacheGameplayCameraControls { get; protected set; }
         public FollowCameraControls CacheMinimapCameraControls { get; protected set; }
@@ -237,7 +240,6 @@ namespace MultiplayerARPG
             UpdateLookInput();
             UpdateWASDInput();
             PlayerCharacterEntity.SetExtraMovement(isSprinting ? ExtraMovementState.IsSprinting : ExtraMovementState.None);
-            PlayerCharacterEntity.AimPosition = PlayerCharacterEntity.GetAttackAimPosition(ref isLeftHandAttacking);
         }
 
         protected void UpdateWASDInput()
@@ -306,6 +308,7 @@ namespace MultiplayerARPG
                     pickedCount = physicFunctions.Raycast(PlayerCharacterEntity.MeleeDamageTransform.position, new Vector3(lookDirection.x, 0, lookDirection.y), 100f, Physics.DefaultRaycastLayers);
                 for (int i = pickedCount - 1; i >= 0; --i)
                 {
+                    aimTargetPosition = physicFunctions.GetRaycastPoint(i);
                     tempTransform = physicFunctions.GetRaycastTransform(i);
                     tempGameEntity = tempTransform.GetComponent<IGameEntity>();
                     if (tempGameEntity != null)
@@ -346,6 +349,7 @@ namespace MultiplayerARPG
                 int pickedCount = physicFunctions.RaycastPickObjects(CacheGameplayCamera, InputManager.MousePosition(), Physics.DefaultRaycastLayers, 100f, out _);
                 for (int i = pickedCount - 1; i >= 0; --i)
                 {
+                    aimTargetPosition = physicFunctions.GetRaycastPoint(i);
                     tempTransform = physicFunctions.GetRaycastTransform(i);
                     tempGameEntity = tempTransform.GetComponent<IGameEntity>();
                     if (tempGameEntity != null)
@@ -386,6 +390,13 @@ namespace MultiplayerARPG
                 CacheUISceneGameplay.SetTargetEntity(null);
                 SelectedEntity = null;
             }
+
+            // Set aim position
+            if (setAimPositionToRaycastHitPoint)
+                PlayerCharacterEntity.AimPosition = PlayerCharacterEntity.GetAttackAimPosition(ref isLeftHandAttacking, aimTargetPosition);
+            else
+                PlayerCharacterEntity.AimPosition = PlayerCharacterEntity.GetAttackAimPosition(ref isLeftHandAttacking);
+
 
             // Turn character
             if (lookDirection.sqrMagnitude > 0f)
