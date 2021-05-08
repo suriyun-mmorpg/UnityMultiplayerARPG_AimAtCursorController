@@ -304,7 +304,7 @@ namespace MultiplayerARPG
                     pickedCount = physicFunctions.Raycast(PlayerCharacterEntity.MeleeDamageTransform.position, lookDirection, 100f, Physics.DefaultRaycastLayers);
                 else
                     pickedCount = physicFunctions.Raycast(PlayerCharacterEntity.MeleeDamageTransform.position, new Vector3(lookDirection.x, 0, lookDirection.y), 100f, Physics.DefaultRaycastLayers);
-                for (int i = 0; i < pickedCount; ++i)
+                for (int i = pickedCount; i >= 0; --i)
                 {
                     tempTransform = physicFunctions.GetRaycastTransform(i);
                     tempGameEntity = tempTransform.GetComponent<IGameEntity>();
@@ -344,7 +344,7 @@ namespace MultiplayerARPG
                 IGameEntity tempGameEntity;
                 Vector3 tempTargetPosition;
                 int pickedCount = physicFunctions.RaycastPickObjects(CacheGameplayCamera, InputManager.MousePosition(), Physics.DefaultRaycastLayers, 100f, out _);
-                for (int i = 0; i < pickedCount; ++i)
+                for (int i = pickedCount; i >= 0; --i)
                 {
                     tempTransform = physicFunctions.GetRaycastTransform(i);
                     tempGameEntity = tempTransform.GetComponent<IGameEntity>();
