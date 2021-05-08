@@ -393,10 +393,18 @@ namespace MultiplayerARPG
 
             // Set aim position
             if (setAimPositionToRaycastHitPoint)
+            {
                 PlayerCharacterEntity.AimPosition = PlayerCharacterEntity.GetAttackAimPosition(ref isLeftHandAttacking, aimTargetPosition);
+                if (GameInstance.Singleton.DimensionType == DimensionType.Dimension3D)
+                {
+                    Quaternion aimRotation = Quaternion.LookRotation(PlayerCharacterEntity.AimPosition.direction);
+                    PlayerCharacterEntity.Pitch = aimRotation.eulerAngles.x;
+                }
+            }
             else
+            {
                 PlayerCharacterEntity.AimPosition = PlayerCharacterEntity.GetAttackAimPosition(ref isLeftHandAttacking);
-
+            }
 
             // Turn character
             if (lookDirection.sqrMagnitude > 0f)
