@@ -318,23 +318,22 @@ namespace MultiplayerARPG
                         SelectedEntity = tempGameEntity.Entity;
                         if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
                         {
-                            if (tempGameEntity is IDamageableEntity)
-                                tempTargetPosition = (tempGameEntity as IDamageableEntity).OpponentAimTransform.position;
-                            else
-                                tempTargetPosition = tempGameEntity.GetTransform().position;
-                            if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
-                                lookDirection = (tempTargetPosition - CacheTransform.position).normalized;
-                            else
-                                lookDirection = (XZ(tempTargetPosition) - XZ(CacheTransform.position)).normalized;
+                            // Turn to pointing entity, so find pointing target position and set look direction
+                            if (!doNotTurnToPointingEntity)
+                            {
+                                // Find target position
+                                if (tempGameEntity is IDamageableEntity)
+                                    tempTargetPosition = (tempGameEntity as IDamageableEntity).OpponentAimTransform.position;
+                                else
+                                    tempTargetPosition = tempGameEntity.GetTransform().position;
+                                // Set look direction
+                                if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
+                                    lookDirection = (tempTargetPosition - CacheTransform.position).normalized;
+                                else
+                                    lookDirection = (XZ(tempTargetPosition) - XZ(CacheTransform.position)).normalized;
+                            }
                         }
                         break;
-                    }
-                    else
-                    {
-                        if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
-                            lookDirection = (physicFunctions.GetRaycastPoint(i) - CacheTransform.position).normalized;
-                        else
-                            lookDirection = (XZ(physicFunctions.GetRaycastPoint(i)) - XZ(CacheTransform.position)).normalized;
                     }
                 }
             }
@@ -359,12 +358,15 @@ namespace MultiplayerARPG
                         SelectedEntity = tempGameEntity.Entity;
                         if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
                         {
-                            if (tempGameEntity is IDamageableEntity)
-                                tempTargetPosition = (tempGameEntity as IDamageableEntity).OpponentAimTransform.position;
-                            else
-                                tempTargetPosition = tempGameEntity.GetTransform().position;
+                            // Turn to pointing entity, so find pointing target position and set look direction
                             if (!doNotTurnToPointingEntity)
                             {
+                                // Find target position
+                                if (tempGameEntity is IDamageableEntity)
+                                    tempTargetPosition = (tempGameEntity as IDamageableEntity).OpponentAimTransform.position;
+                                else
+                                    tempTargetPosition = tempGameEntity.GetTransform().position;
+                                // Set look direction
                                 if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
                                     lookDirection = (tempTargetPosition - CacheTransform.position).normalized;
                                 else
@@ -372,16 +374,6 @@ namespace MultiplayerARPG
                             }
                         }
                         break;
-                    }
-                    else
-                    {
-                        if (!doNotTurnToPointingEntity)
-                        {
-                            if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
-                                lookDirection = (physicFunctions.GetRaycastPoint(i) - CacheTransform.position).normalized;
-                            else
-                                lookDirection = (XZ(physicFunctions.GetRaycastPoint(i)) - XZ(CacheTransform.position)).normalized;
-                        }
                     }
                 }
             }
