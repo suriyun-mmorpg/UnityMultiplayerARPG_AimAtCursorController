@@ -315,6 +315,7 @@ namespace MultiplayerARPG
                     {
                         foundTargetEntity = true;
                         CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
+                        PlayerCharacterEntity.SetTargetEntity(tempGameEntity.Entity);
                         SelectedEntity = tempGameEntity.Entity;
                         if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
                         {
@@ -355,6 +356,7 @@ namespace MultiplayerARPG
                     {
                         foundTargetEntity = true;
                         CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
+                        PlayerCharacterEntity.SetTargetEntity(tempGameEntity.Entity);
                         SelectedEntity = tempGameEntity.Entity;
                         if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
                         {
@@ -380,6 +382,7 @@ namespace MultiplayerARPG
             if (!foundTargetEntity)
             {
                 CacheUISceneGameplay.SetTargetEntity(null);
+                PlayerCharacterEntity.SetTargetEntity(null);
                 SelectedEntity = null;
             }
 
