@@ -442,7 +442,7 @@ namespace MultiplayerARPG
                 !PlayerCharacterEntity.GetCaches().Skills.TryGetValue(skill, out _))
                 return;
 
-            bool isAttackSkill = skill.IsAttack();
+            bool isAttackSkill = skill.IsAttack;
             if (PlayerCharacterEntity.UseSkill(skill.DataId, isLeftHandAttacking, SelectedEntityObjectId, aimPosition) && isAttackSkill)
             {
                 isLeftHandAttacking = !isLeftHandAttacking;
@@ -499,7 +499,7 @@ namespace MultiplayerARPG
             }
             else if (item.IsSkill())
             {
-                bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack();
+                bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack;
                 if (PlayerCharacterEntity.UseSkillItem((short)itemIndex, isLeftHandAttacking, SelectedEntityObjectId, aimPosition) && isAttackSkill)
                 {
                     isLeftHandAttacking = !isLeftHandAttacking;
