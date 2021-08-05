@@ -249,6 +249,23 @@ namespace MultiplayerARPG
             Vector3 moveDirection = GetMoveDirection(InputManager.GetAxis("Horizontal", raw), InputManager.GetAxis("Vertical", raw));
             moveDirection.Normalize();
 
+            // Get fire type
+            FireType fireType = FireType.SingleFire;
+            IWeaponItem leftHandItem = PlayerCharacterEntity.EquipWeapons.GetLeftHandWeaponItem();
+            IWeaponItem rightHandItem = PlayerCharacterEntity.EquipWeapons.GetRightHandWeaponItem();
+            if (isLeftHandAttacking && leftHandItem != null)
+            {
+                fireType = leftHandItem.FireType;
+            }
+            else if (!isLeftHandAttacking && rightHandItem != null)
+            {
+                fireType = rightHandItem.FireType;
+            }
+            else
+            {
+                fireType = GameInstance.Singleton.DefaultWeaponItem.FireType;
+            }
+
             if (moveDirection.sqrMagnitude > 0f)
             {
                 // Character start moving, so hide npc dialog
@@ -262,10 +279,47 @@ namespace MultiplayerARPG
                 avoidAttackWhileCursorOverUI = true;
 
             // Attack when player pressed attack button
-            if (!avoidAttackWhileCursorOverUI && !UICharacterHotkeys.UsingHotkey &&
-                (InputManager.GetButton("Fire1") || InputManager.GetButton("Attack") ||
-                InputManager.GetButtonUp("Fire1") || InputManager.GetButtonUp("Attack")))
-                UpdateFireInput();
+            if (!avoidAttackWhileCursorOverUI && !UICharacterHotkeys.UsingHotkey)
+            {
+                // NOTE: With this controller, single fire will do the same as automatic
+                if (InputManager.GetButtonDown("Fire1") || InputManager.GetButtonDown("Attack"))
+                {
+                    switch (fireType)
+                    {
+                        case FireType.SingleFire:
+                        case FireType.Automatic:
+                            Attack();
+                            break;
+                        case FireType.FireOnRelease:
+                            WeaponCharge();
+                            break;
+                    }
+                }
+                else if (InputManager.GetButton("Fire1") || InputManager.GetButtonUp("Attack"))
+                {
+                    switch (fireType)
+                    {
+                        case FireType.SingleFire:
+                        case FireType.Automatic:
+                            Attack();
+                            break;
+                        case FireType.FireOnRelease:
+                            break;
+                    }
+                }
+                else if (InputManager.GetButtonUp("Fire1") || InputManager.GetButtonUp("Attack"))
+                {
+                    switch (fireType)
+                    {
+                        case FireType.SingleFire:
+                        case FireType.Automatic:
+                            break;
+                        case FireType.FireOnRelease:
+                            Attack();
+                            break;
+                    }
+                }
+            }
 
             // No pointer over ui and all attack key released, stop avoid attack inputs
             if (avoidAttackWhileCursorOverUI && !isPointerOverUIObject &&
@@ -280,13 +334,19 @@ namespace MultiplayerARPG
             PlayerCharacterEntity.KeyMovement(moveDirection, movementState);
         }
 
-        protected void UpdateFireInput()
+        protected void Attack()
         {
-            if (!ConstructingBuildingEntity)
-            {
-                if (PlayerCharacterEntity.Attack(isLeftHandAttacking))
-                    isLeftHandAttacking = !isLeftHandAttacking;
-            }
+            if (ConstructingBuildingEntity)
+                return;
+            if (PlayerCharacterEntity.Attack(isLeftHandAttacking))
+                isLeftHandAttacking = !isLeftHandAttacking;
+        }
+
+        protected void WeaponCharge()
+        {
+            if (ConstructingBuildingEntity)
+                return;
+            PlayerCharacterEntity.StartCharge(isLeftHandAttacking);
         }
 
         protected void UpdateLookInput()
