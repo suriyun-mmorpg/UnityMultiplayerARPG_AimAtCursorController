@@ -239,7 +239,7 @@ namespace MultiplayerARPG
 
             UpdateLookInput();
             UpdateWASDInput();
-            PlayerCharacterEntity.SetExtraMovement(isSprinting ? ExtraMovementState.IsSprinting : ExtraMovementState.None);
+            PlayerCharacterEntity.SetExtraMovementState(isSprinting ? ExtraMovementState.IsSprinting : ExtraMovementState.None);
         }
 
         protected void UpdateWASDInput()
