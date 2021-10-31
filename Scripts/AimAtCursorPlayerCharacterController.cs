@@ -34,6 +34,7 @@ namespace MultiplayerARPG
 
         protected bool isLeftHandAttacking;
         protected bool isSprinting;
+        protected bool isWalking;
         protected IPhysicFunctions physicFunctions;
         protected BaseCharacterEntity targetCharacter;
         protected BasePlayerCharacterEntity targetPlayer;
@@ -227,6 +228,13 @@ namespace MultiplayerARPG
                 {
                     // Toggles sprint state
                     isSprinting = !isSprinting;
+                    isWalking = false;
+                }
+                else if (InputManager.GetButtonDown("Walk"))
+                {
+                    // Toggles sprint state
+                    isWalking = !isWalking;
+                    isSprinting = false;
                 }
                 // Auto reload
                 if (PlayerCharacterEntity.EquipWeapons.rightHand.IsAmmoEmpty() ||
@@ -239,7 +247,13 @@ namespace MultiplayerARPG
 
             UpdateLookInput();
             UpdateWASDInput();
-            PlayerCharacterEntity.SetExtraMovementState(isSprinting ? ExtraMovementState.IsSprinting : ExtraMovementState.None);
+            // Set extra movement state
+            if (isSprinting)
+                PlayerCharacterEntity.SetExtraMovementState(ExtraMovementState.IsSprinting);
+            else if (isWalking)
+                PlayerCharacterEntity.SetExtraMovementState(ExtraMovementState.IsWalking);
+            else
+                PlayerCharacterEntity.SetExtraMovementState(ExtraMovementState.None);
         }
 
         protected void UpdateWASDInput()
