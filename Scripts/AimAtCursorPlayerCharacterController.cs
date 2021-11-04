@@ -341,10 +341,10 @@ namespace MultiplayerARPG
                 avoidAttackWhileCursorOverUI = false;
 
             // Always forward
-            MovementState movementState = Vector3.Angle(moveDirection, MovementTransform.forward) < 120 ?
-                MovementState.Forward : MovementState.Backward;
+            MovementState movementState = MovementState.None;
             if (InputManager.GetButtonDown("Jump"))
                 movementState |= MovementState.IsJump;
+            movementState |= GameplayUtils.GetStraightlyMovementStateByDirection(moveDirection, MovementTransform.forward);
             PlayerCharacterEntity.KeyMovement(moveDirection, movementState);
         }
 
