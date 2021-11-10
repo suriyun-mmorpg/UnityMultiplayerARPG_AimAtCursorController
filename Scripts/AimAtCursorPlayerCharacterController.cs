@@ -352,6 +352,7 @@ namespace MultiplayerARPG
         {
             if (ConstructingBuildingEntity)
                 return;
+            PlayerCharacterEntity.SetTargetEntity(SelectedEntity);
             if (PlayerCharacterEntity.Attack(isLeftHandAttacking))
                 isLeftHandAttacking = !isLeftHandAttacking;
         }
