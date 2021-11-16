@@ -131,11 +131,11 @@ namespace MultiplayerARPG
 
         protected void UpdateInput()
         {
-            if (GenericUtils.IsFocusInputField())
+            if (GenericUtils.IsFocusInputField() || PlayerCharacterEntity.IsDead())
+            {
+                PlayerCharacterEntity.KeyMovement(Vector3.zero, MovementState.None);
                 return;
-
-            if (PlayerCharacterEntity.IsDead())
-                return;
+            }
 
             // If it's building something, don't allow to activate NPC/Warp/Pickup Item
             if (!ConstructingBuildingEntity)
