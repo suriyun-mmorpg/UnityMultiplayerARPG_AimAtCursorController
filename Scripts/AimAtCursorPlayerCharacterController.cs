@@ -50,6 +50,26 @@ namespace MultiplayerARPG
         protected ItemsContainerEntity targetItemsContainer;
         protected Vector3 aimTargetPosition;
 
+        #region Events
+        /// <summary>
+        /// RelateId (string), AimPosition (AimPosition)
+        /// </summary>
+        public event System.Action<string, AimPosition> onBeforeUseSkillHotkey;
+        /// <summary>
+        /// RelateId (string), AimPosition (AimPosition)
+        /// </summary>
+        public event System.Action<string, AimPosition> onAfterUseSkillHotkey;
+        /// <summary>
+        /// RelateId (string), AimPosition (AimPosition)
+        /// </summary>
+        public event System.Action<string, AimPosition> onBeforeUseItemHotkey;
+        /// <summary>
+        /// RelateId (string), AimPosition (AimPosition)
+        /// </summary>
+        public event System.Action<string, AimPosition> onAfterUseItemHotkey;
+        #endregion
+
+        public byte HotkeyEquipWeaponSet { get; set; }
         public FollowCameraControls CacheGameplayCameraControls { get; protected set; }
         public FollowCameraControls CacheMinimapCameraControls { get; protected set; }
         public Camera CacheGameplayCamera { get { return CacheGameplayCameraControls.CacheCamera; } }
@@ -504,10 +524,19 @@ namespace MultiplayerARPG
             switch (type)
             {
                 case HotkeyType.Skill:
+                    if (onBeforeUseSkillHotkey != null)
+                        onBeforeUseSkillHotkey.Invoke(relateId, aimPosition);
                     UseSkill(relateId, aimPosition);
+                    if (onAfterUseSkillHotkey != null)
+                        onAfterUseSkillHotkey.Invoke(relateId, aimPosition);
                     break;
                 case HotkeyType.Item:
+                    HotkeyEquipWeaponSet = PlayerCharacterEntity.EquipWeaponSet;
+                    if (onBeforeUseItemHotkey != null)
+                        onBeforeUseItemHotkey.Invoke(relateId, aimPosition);
                     UseItem(relateId, aimPosition);
+                    if (onAfterUseItemHotkey != null)
+                        onAfterUseItemHotkey.Invoke(relateId, aimPosition);
                     break;
             }
         }
@@ -571,6 +600,7 @@ namespace MultiplayerARPG
                 GameInstance.ClientInventoryHandlers.RequestEquipItem(
                         PlayerCharacterEntity,
                         (short)itemIndex,
+                        HotkeyEquipWeaponSet,
                         ClientInventoryActions.ResponseEquipArmor,
                         ClientInventoryActions.ResponseEquipWeapon);
             }
