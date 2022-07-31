@@ -200,7 +200,7 @@ namespace MultiplayerARPG
                     {
                         // Use building
                         SelectedEntity = targetBuilding;
-                        ActivateBuilding(targetBuilding);
+                        ActivateBuilding();
                     }
                     else if (targetVehicle)
                     {
