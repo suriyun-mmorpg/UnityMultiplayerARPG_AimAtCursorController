@@ -724,7 +724,7 @@ namespace MultiplayerARPG
             for (int tempCounter = 0; tempCounter < count; ++tempCounter)
             {
                 tempTransform = physicFunctions.GetRaycastTransform(tempCounter);
-                if (ConstructingBuildingEntity.CacheTransform.root == tempTransform.root)
+                if (ConstructingBuildingEntity.EntityTransform.root == tempTransform.root)
                 {
                     // Hit collider which is part of constructing building entity, skip it
                     continue;
