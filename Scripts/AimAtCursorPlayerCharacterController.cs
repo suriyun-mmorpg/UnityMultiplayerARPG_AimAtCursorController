@@ -187,19 +187,19 @@ namespace MultiplayerARPG
                     if (targetPlayer && CacheUISceneGameplay)
                     {
                         // Show dealing, invitation menu
-                        SelectedEntity = targetPlayer;
+                        SelectedGameEntity = targetPlayer;
                         CacheUISceneGameplay.SetActivePlayerCharacter(targetPlayer);
                     }
                     else if (targetNpc)
                     {
                         // Talk to NPC
-                        SelectedEntity = targetNpc;
+                        SelectedGameEntity = targetNpc;
                         PlayerCharacterEntity.NpcAction.CallServerNpcActivate(targetNpc.ObjectId);
                     }
                     else if (targetBuilding)
                     {
                         // Use building
-                        SelectedEntity = targetBuilding;
+                        SelectedGameEntity = targetBuilding;
                         ActivateBuilding();
                     }
                     else if (targetVehicle)
@@ -374,7 +374,7 @@ namespace MultiplayerARPG
         {
             if (ConstructingBuildingEntity)
                 return;
-            PlayerCharacterEntity.SetTargetEntity(SelectedEntity);
+            PlayerCharacterEntity.SetTargetEntity(SelectedGameEntity);
             if (PlayerCharacterEntity.Attack(isLeftHandAttacking))
                 isLeftHandAttacking = !isLeftHandAttacking;
         }
@@ -412,7 +412,7 @@ namespace MultiplayerARPG
                     {
                         foundTargetEntity = true;
                         CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
-                        SelectedEntity = tempGameEntity.Entity;
+                        SelectedGameEntity = tempGameEntity.Entity;
                         if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
                         {
                             // Turn to pointing entity, so find pointing target position and set look direction
@@ -452,7 +452,7 @@ namespace MultiplayerARPG
                     {
                         foundTargetEntity = true;
                         CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
-                        SelectedEntity = tempGameEntity.Entity;
+                        SelectedGameEntity = tempGameEntity.Entity;
                         if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
                         {
                             // Turn to pointing entity, so find pointing target position and set look direction
@@ -477,7 +477,7 @@ namespace MultiplayerARPG
             if (!foundTargetEntity)
             {
                 CacheUISceneGameplay.SetTargetEntity(null);
-                SelectedEntity = null;
+                SelectedGameEntity = null;
             }
 
             // Set aim position
@@ -549,7 +549,7 @@ namespace MultiplayerARPG
                 return;
 
             bool isAttackSkill = skill.IsAttack;
-            if (PlayerCharacterEntity.UseSkill(skill.DataId, isLeftHandAttacking, SelectedEntityObjectId, aimPosition) && isAttackSkill)
+            if (PlayerCharacterEntity.UseSkill(skill.DataId, isLeftHandAttacking, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
             {
                 isLeftHandAttacking = !isLeftHandAttacking;
             }
@@ -607,7 +607,7 @@ namespace MultiplayerARPG
             else if (item.IsSkill())
             {
                 bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack;
-                if (PlayerCharacterEntity.UseSkillItem((short)itemIndex, isLeftHandAttacking, SelectedEntityObjectId, aimPosition) && isAttackSkill)
+                if (PlayerCharacterEntity.UseSkillItem((short)itemIndex, isLeftHandAttacking, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
                 {
                     isLeftHandAttacking = !isLeftHandAttacking;
                 }
