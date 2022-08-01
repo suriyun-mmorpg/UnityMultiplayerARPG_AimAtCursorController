@@ -187,19 +187,19 @@ namespace MultiplayerARPG
                     if (targetPlayer && CacheUISceneGameplay)
                     {
                         // Show dealing, invitation menu
-                        SelectedGameEntity = targetPlayer;
+                        SelectedEntity = targetPlayer;
                         CacheUISceneGameplay.SetActivePlayerCharacter(targetPlayer);
                     }
                     else if (targetNpc)
                     {
                         // Talk to NPC
-                        SelectedGameEntity = targetNpc;
+                        SelectedEntity = targetNpc;
                         PlayerCharacterEntity.NpcAction.CallServerNpcActivate(targetNpc.ObjectId);
                     }
                     else if (targetBuilding)
                     {
                         // Use building
-                        SelectedGameEntity = targetBuilding;
+                        SelectedEntity = targetBuilding;
                         ActivateBuilding();
                     }
                     else if (targetVehicle)
@@ -412,7 +412,7 @@ namespace MultiplayerARPG
                     {
                         foundTargetEntity = true;
                         CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
-                        SelectedGameEntity = tempGameEntity.Entity;
+                        SelectedEntity = tempGameEntity.Entity;
                         if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
                         {
                             // Turn to pointing entity, so find pointing target position and set look direction
@@ -452,7 +452,7 @@ namespace MultiplayerARPG
                     {
                         foundTargetEntity = true;
                         CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
-                        SelectedGameEntity = tempGameEntity.Entity;
+                        SelectedEntity = tempGameEntity.Entity;
                         if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
                         {
                             // Turn to pointing entity, so find pointing target position and set look direction
@@ -477,7 +477,7 @@ namespace MultiplayerARPG
             if (!foundTargetEntity)
             {
                 CacheUISceneGameplay.SetTargetEntity(null);
-                SelectedGameEntity = null;
+                SelectedEntity = null;
             }
 
             // Set aim position
