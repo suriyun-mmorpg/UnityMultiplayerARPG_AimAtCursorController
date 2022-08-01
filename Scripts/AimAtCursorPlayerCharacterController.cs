@@ -425,9 +425,9 @@ namespace MultiplayerARPG
                                     tempTargetPosition = tempGameEntity.GetTransform().position;
                                 // Set look direction
                                 if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
-                                    lookDirection = (tempTargetPosition - CacheTransform.position).normalized;
+                                    lookDirection = (tempTargetPosition - EntityTransform.position).normalized;
                                 else
-                                    lookDirection = (XZ(tempTargetPosition) - XZ(CacheTransform.position)).normalized;
+                                    lookDirection = (XZ(tempTargetPosition) - XZ(EntityTransform.position)).normalized;
                             }
                         }
                         break;
@@ -465,9 +465,9 @@ namespace MultiplayerARPG
                                     tempTargetPosition = tempGameEntity.GetTransform().position;
                                 // Set look direction
                                 if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
-                                    lookDirection = (tempTargetPosition - CacheTransform.position).normalized;
+                                    lookDirection = (tempTargetPosition - EntityTransform.position).normalized;
                                 else
-                                    lookDirection = (XZ(tempTargetPosition) - XZ(CacheTransform.position)).normalized;
+                                    lookDirection = (XZ(tempTargetPosition) - XZ(EntityTransform.position)).normalized;
                             }
                         }
                         break;
@@ -698,7 +698,7 @@ namespace MultiplayerARPG
 
         public void FindAndSetBuildingAreaByAxes(Vector2 aimAxes)
         {
-            Vector3 raycastPosition = CacheTransform.position + (GameplayUtils.GetDirectionByAxes(CacheGameplayCameraTransform, aimAxes.x, aimAxes.y) * ConstructingBuildingEntity.BuildDistance);
+            Vector3 raycastPosition = EntityTransform.position + (GameplayUtils.GetDirectionByAxes(CacheGameplayCameraTransform, aimAxes.x, aimAxes.y) * ConstructingBuildingEntity.BuildDistance);
             LoopSetBuildingArea(physicFunctions.RaycastDown(raycastPosition, CurrentGameInstance.GetBuildLayerMask()));
         }
 
