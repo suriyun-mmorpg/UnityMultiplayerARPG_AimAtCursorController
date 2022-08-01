@@ -139,7 +139,7 @@ namespace MultiplayerARPG
 
         protected override void Update()
         {
-            if (!PlayerCharacterEntity || !PlayerCharacterEntity.IsOwnerClient)
+            if (!PlayingCharacterEntity || !PlayingCharacterEntity.IsOwnerClient)
                 return;
 
             if (CacheGameplayCameraControls != null)
@@ -153,9 +153,9 @@ namespace MultiplayerARPG
 
         protected void UpdateInput()
         {
-            if (GenericUtils.IsFocusInputField() || PlayerCharacterEntity.IsDead())
+            if (GenericUtils.IsFocusInputField() || PlayingCharacterEntity.IsDead())
             {
-                PlayerCharacterEntity.KeyMovement(Vector3.zero, MovementState.None);
+                PlayingCharacterEntity.KeyMovement(Vector3.zero, MovementState.None);
                 return;
             }
 
@@ -194,7 +194,7 @@ namespace MultiplayerARPG
                     {
                         // Talk to NPC
                         SelectedEntity = targetNpc;
-                        PlayerCharacterEntity.NpcAction.CallServerNpcActivate(targetNpc.ObjectId);
+                        PlayingCharacterEntity.NpcAction.CallServerNpcActivate(targetNpc.ObjectId);
                     }
                     else if (targetBuilding)
                     {
@@ -205,12 +205,12 @@ namespace MultiplayerARPG
                     else if (targetVehicle)
                     {
                         // Enter vehicle
-                        PlayerCharacterEntity.CallServerEnterVehicle(targetVehicle.ObjectId);
+                        PlayingCharacterEntity.CallServerEnterVehicle(targetVehicle.ObjectId);
                     }
                     else if (targetWarpPortal)
                     {
                         // Enter warp, For some warp portals that `warpImmediatelyWhenEnter` is FALSE
-                        PlayerCharacterEntity.CallServerEnterWarp(targetWarpPortal.ObjectId);
+                        PlayingCharacterEntity.CallServerEnterWarp(targetWarpPortal.ObjectId);
                     }
                     else if (targetItemsContainer)
                     {
@@ -225,7 +225,7 @@ namespace MultiplayerARPG
                     if (ItemDropEntityDetector.itemDrops.Count > 0)
                         targetItemDrop = ItemDropEntityDetector.itemDrops[0];
                     if (targetItemDrop != null)
-                        PlayerCharacterEntity.CallServerPickupItem(targetItemDrop.ObjectId);
+                        PlayingCharacterEntity.CallServerPickupItem(targetItemDrop.ObjectId);
                 }
                 // Reload
                 if (InputManager.GetButtonDown("Reload"))
@@ -236,14 +236,14 @@ namespace MultiplayerARPG
                 if (InputManager.GetButtonDown("ExitVehicle"))
                 {
                     // Exit vehicle
-                    PlayerCharacterEntity.CallServerExitVehicle();
+                    PlayingCharacterEntity.CallServerExitVehicle();
                 }
                 if (InputManager.GetButtonDown("SwitchEquipWeaponSet"))
                 {
                     // Switch equip weapon set
                     GameInstance.ClientInventoryHandlers.RequestSwitchEquipWeaponSet(new RequestSwitchEquipWeaponSetMessage()
                     {
-                        equipWeaponSet = (byte)(PlayerCharacterEntity.EquipWeaponSet + 1),
+                        equipWeaponSet = (byte)(PlayingCharacterEntity.EquipWeaponSet + 1),
                     }, ClientInventoryActions.ResponseSwitchEquipWeaponSet);
                 }
                 if (InputManager.GetButtonDown("Sprint"))
@@ -259,8 +259,8 @@ namespace MultiplayerARPG
                     isSprinting = false;
                 }
                 // Auto reload
-                if (PlayerCharacterEntity.EquipWeapons.rightHand.IsAmmoEmpty() ||
-                    PlayerCharacterEntity.EquipWeapons.leftHand.IsAmmoEmpty())
+                if (PlayingCharacterEntity.EquipWeapons.rightHand.IsAmmoEmpty() ||
+                    PlayingCharacterEntity.EquipWeapons.leftHand.IsAmmoEmpty())
                 {
                     // Reload ammo when empty and not press any keys
                     ReloadAmmo();
@@ -271,11 +271,11 @@ namespace MultiplayerARPG
             UpdateWASDInput();
             // Set extra movement state
             if (isSprinting)
-                PlayerCharacterEntity.SetExtraMovementState(ExtraMovementState.IsSprinting);
+                PlayingCharacterEntity.SetExtraMovementState(ExtraMovementState.IsSprinting);
             else if (isWalking)
-                PlayerCharacterEntity.SetExtraMovementState(ExtraMovementState.IsWalking);
+                PlayingCharacterEntity.SetExtraMovementState(ExtraMovementState.IsWalking);
             else
-                PlayerCharacterEntity.SetExtraMovementState(ExtraMovementState.None);
+                PlayingCharacterEntity.SetExtraMovementState(ExtraMovementState.None);
         }
 
         protected void UpdateWASDInput()
@@ -287,8 +287,8 @@ namespace MultiplayerARPG
 
             // Get fire type
             FireType fireType = FireType.SingleFire;
-            IWeaponItem leftHandItem = PlayerCharacterEntity.EquipWeapons.GetLeftHandWeaponItem();
-            IWeaponItem rightHandItem = PlayerCharacterEntity.EquipWeapons.GetRightHandWeaponItem();
+            IWeaponItem leftHandItem = PlayingCharacterEntity.EquipWeapons.GetLeftHandWeaponItem();
+            IWeaponItem rightHandItem = PlayingCharacterEntity.EquipWeapons.GetRightHandWeaponItem();
             if (isLeftHandAttacking && leftHandItem != null)
             {
                 fireType = leftHandItem.FireType;
@@ -367,15 +367,15 @@ namespace MultiplayerARPG
             if (InputManager.GetButtonDown("Jump"))
                 movementState |= MovementState.IsJump;
             movementState |= GameplayUtils.GetStraightlyMovementStateByDirection(moveDirection, MovementTransform.forward);
-            PlayerCharacterEntity.KeyMovement(moveDirection, movementState);
+            PlayingCharacterEntity.KeyMovement(moveDirection, movementState);
         }
 
         protected void Attack()
         {
             if (ConstructingBuildingEntity)
                 return;
-            PlayerCharacterEntity.SetTargetEntity(SelectedGameEntity);
-            if (PlayerCharacterEntity.Attack(isLeftHandAttacking))
+            PlayingCharacterEntity.SetTargetEntity(SelectedGameEntity);
+            if (PlayingCharacterEntity.Attack(isLeftHandAttacking))
                 isLeftHandAttacking = !isLeftHandAttacking;
         }
 
@@ -383,7 +383,7 @@ namespace MultiplayerARPG
         {
             if (ConstructingBuildingEntity)
                 return;
-            PlayerCharacterEntity.StartCharge(isLeftHandAttacking);
+            PlayingCharacterEntity.StartCharge(isLeftHandAttacking);
         }
 
         protected void UpdateLookInput()
@@ -400,9 +400,9 @@ namespace MultiplayerARPG
                 Vector3 tempTargetPosition;
                 int pickedCount;
                 if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
-                    pickedCount = physicFunctions.Raycast(PlayerCharacterEntity.MeleeDamageTransform.position, lookDirection, 100f, Physics.DefaultRaycastLayers);
+                    pickedCount = physicFunctions.Raycast(PlayingCharacterEntity.MeleeDamageTransform.position, lookDirection, 100f, Physics.DefaultRaycastLayers);
                 else
-                    pickedCount = physicFunctions.Raycast(PlayerCharacterEntity.MeleeDamageTransform.position, new Vector3(lookDirection.x, 0, lookDirection.y), 100f, Physics.DefaultRaycastLayers);
+                    pickedCount = physicFunctions.Raycast(PlayingCharacterEntity.MeleeDamageTransform.position, new Vector3(lookDirection.x, 0, lookDirection.y), 100f, Physics.DefaultRaycastLayers);
                 for (int i = pickedCount - 1; i >= 0; --i)
                 {
                     aimTargetPosition = physicFunctions.GetRaycastPoint(i);
@@ -413,7 +413,7 @@ namespace MultiplayerARPG
                         foundTargetEntity = true;
                         CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
                         SelectedEntity = tempGameEntity.Entity;
-                        if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
+                        if (tempGameEntity.Entity != PlayingCharacterEntity.Entity)
                         {
                             // Turn to pointing entity, so find pointing target position and set look direction
                             if (!doNotTurnToPointingEntity)
@@ -453,7 +453,7 @@ namespace MultiplayerARPG
                         foundTargetEntity = true;
                         CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
                         SelectedEntity = tempGameEntity.Entity;
-                        if (tempGameEntity.Entity != PlayerCharacterEntity.Entity)
+                        if (tempGameEntity.Entity != PlayingCharacterEntity.Entity)
                         {
                             // Turn to pointing entity, so find pointing target position and set look direction
                             if (!doNotTurnToPointingEntity)
@@ -483,16 +483,16 @@ namespace MultiplayerARPG
             // Set aim position
             if (setAimPositionToRaycastHitPoint)
             {
-                PlayerCharacterEntity.AimPosition = PlayerCharacterEntity.GetAttackAimPosition(ref isLeftHandAttacking, aimTargetPosition);
+                PlayingCharacterEntity.AimPosition = PlayingCharacterEntity.GetAttackAimPosition(ref isLeftHandAttacking, aimTargetPosition);
                 if (GameInstance.Singleton.DimensionType == DimensionType.Dimension3D)
                 {
-                    Quaternion aimRotation = Quaternion.LookRotation(PlayerCharacterEntity.AimPosition.direction);
-                    PlayerCharacterEntity.Pitch = aimRotation.eulerAngles.x;
+                    Quaternion aimRotation = Quaternion.LookRotation(PlayingCharacterEntity.AimPosition.direction);
+                    PlayingCharacterEntity.Pitch = aimRotation.eulerAngles.x;
                 }
             }
             else
             {
-                PlayerCharacterEntity.AimPosition = PlayerCharacterEntity.GetAttackAimPosition(ref isLeftHandAttacking);
+                PlayingCharacterEntity.AimPosition = PlayingCharacterEntity.GetAttackAimPosition(ref isLeftHandAttacking);
             }
 
             // Turn character
@@ -500,11 +500,11 @@ namespace MultiplayerARPG
             {
                 if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
                 {
-                    PlayerCharacterEntity.SetLookRotation(Quaternion.LookRotation(lookDirection));
+                    PlayingCharacterEntity.SetLookRotation(Quaternion.LookRotation(lookDirection));
                 }
                 else
                 {
-                    PlayerCharacterEntity.SetLookRotation(Quaternion.LookRotation(new Vector3(lookDirection.x, 0, lookDirection.y)));
+                    PlayingCharacterEntity.SetLookRotation(Quaternion.LookRotation(new Vector3(lookDirection.x, 0, lookDirection.y)));
                 }
             }
         }
@@ -512,10 +512,10 @@ namespace MultiplayerARPG
         protected void ReloadAmmo()
         {
             // Reload ammo at server
-            if (!PlayerCharacterEntity.EquipWeapons.rightHand.IsAmmoFull())
-                PlayerCharacterEntity.Reload(false);
-            else if (!PlayerCharacterEntity.EquipWeapons.leftHand.IsAmmoFull())
-                PlayerCharacterEntity.Reload(true);
+            if (!PlayingCharacterEntity.EquipWeapons.rightHand.IsAmmoFull())
+                PlayingCharacterEntity.Reload(false);
+            else if (!PlayingCharacterEntity.EquipWeapons.leftHand.IsAmmoFull())
+                PlayingCharacterEntity.Reload(true);
         }
 
         public override void UseHotkey(HotkeyType type, string relateId, AimPosition aimPosition)
@@ -531,7 +531,7 @@ namespace MultiplayerARPG
                         onAfterUseSkillHotkey.Invoke(relateId, aimPosition);
                     break;
                 case HotkeyType.Item:
-                    HotkeyEquipWeaponSet = PlayerCharacterEntity.EquipWeaponSet;
+                    HotkeyEquipWeaponSet = PlayingCharacterEntity.EquipWeaponSet;
                     if (onBeforeUseItemHotkey != null)
                         onBeforeUseItemHotkey.Invoke(relateId, aimPosition);
                     UseItem(relateId, aimPosition);
@@ -545,11 +545,11 @@ namespace MultiplayerARPG
         {
             BaseSkill skill;
             if (!GameInstance.Skills.TryGetValue(BaseGameData.MakeDataId(id), out skill) || skill == null ||
-                !PlayerCharacterEntity.GetCaches().Skills.TryGetValue(skill, out _))
+                !PlayingCharacterEntity.GetCaches().Skills.TryGetValue(skill, out _))
                 return;
 
             bool isAttackSkill = skill.IsAttack;
-            if (PlayerCharacterEntity.UseSkill(skill.DataId, isLeftHandAttacking, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
+            if (PlayingCharacterEntity.UseSkill(skill.DataId, isLeftHandAttacking, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
             {
                 isLeftHandAttacking = !isLeftHandAttacking;
             }
@@ -570,7 +570,7 @@ namespace MultiplayerARPG
                 InventoryType inventoryType;
                 byte equipWeaponSet;
                 CharacterItem characterItem;
-                if (PlayerCharacterEntity.IsEquipped(
+                if (PlayingCharacterEntity.IsEquipped(
                     id,
                     out inventoryType,
                     out itemIndex,
@@ -598,7 +598,7 @@ namespace MultiplayerARPG
             if (item.IsEquipment())
             {
                 GameInstance.ClientInventoryHandlers.RequestEquipItem(
-                        PlayerCharacterEntity,
+                        PlayingCharacterEntity,
                         (short)itemIndex,
                         HotkeyEquipWeaponSet,
                         ClientInventoryActions.ResponseEquipArmor,
@@ -607,7 +607,7 @@ namespace MultiplayerARPG
             else if (item.IsSkill())
             {
                 bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack;
-                if (PlayerCharacterEntity.UseSkillItem((short)itemIndex, isLeftHandAttacking, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
+                if (PlayingCharacterEntity.UseSkillItem((short)itemIndex, isLeftHandAttacking, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
                 {
                     isLeftHandAttacking = !isLeftHandAttacking;
                 }
@@ -619,7 +619,7 @@ namespace MultiplayerARPG
             }
             else if (item.IsUsable())
             {
-                PlayerCharacterEntity.CallServerUseItem((short)itemIndex);
+                PlayingCharacterEntity.CallServerUseItem((short)itemIndex);
             }
         }
 
