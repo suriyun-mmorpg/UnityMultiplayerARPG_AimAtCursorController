@@ -95,12 +95,12 @@ namespace MultiplayerARPG
             GameObject tempGameObject = new GameObject("_ActivatingEntityDetector");
             ActivatableEntityDetector = tempGameObject.AddComponent<NearbyEntityDetector>();
             ActivatableEntityDetector.detectingRadius = distanceToActivateByActivateKey;
-            ActivatableEntityDetector.findActivatableEntity = true;
+            ActivatableEntityDetector.findActivatePressActivatableEntity = true;
             // This entity detector will be find item drop entities to use when pressed pickup key
             tempGameObject = new GameObject("_ItemDropEntityDetector");
             ItemDropEntityDetector = tempGameObject.AddComponent<NearbyEntityDetector>();
             ItemDropEntityDetector.detectingRadius = distanceToActivateByPickupKey;
-            ItemDropEntityDetector.findPickupActivatableEntity = true;
+            ItemDropEntityDetector.findPickupPressActivatableEntity = true;
             // Initial physic functions
             if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
                 physicFunctions = new PhysicFunctions(512);
@@ -160,15 +160,15 @@ namespace MultiplayerARPG
                 // Activate nearby npcs / players / activable buildings
                 if (InputManager.GetButtonDown("Activate"))
                 {
-                    if (ActivatableEntityDetector.activatableEntities.Count > 0)
+                    if (ActivatableEntityDetector.activatePressActivatableEntities.Count > 0)
                     {
-                        IActivatableEntity activatable;
-                        for (int i = 0; i < ActivatableEntityDetector.activatableEntities.Count; ++i)
+                        IActivatePressActivatableEntity activatable;
+                        for (int i = 0; i < ActivatableEntityDetector.activatePressActivatableEntities.Count; ++i)
                         {
-                            activatable = ActivatableEntityDetector.activatableEntities[i];
-                            if (activatable.CanActivate())
+                            activatable = ActivatableEntityDetector.activatePressActivatableEntities[i];
+                            if (activatable.CanActivateByActivateKey())
                             {
-                                activatable.OnActivate();
+                                activatable.OnActivateByActivateKey();
                                 break;
                             }
                         }
@@ -177,15 +177,15 @@ namespace MultiplayerARPG
                 // Pick up nearby items
                 if (InputManager.GetButtonDown("PickUpItem"))
                 {
-                    if (ItemDropEntityDetector.pickupActivatableEntities.Count > 0)
+                    if (ItemDropEntityDetector.pickupPressActivatableEntities.Count > 0)
                     {
-                        IPickupActivatableEntity activatable;
-                        for (int i = 0; i < ItemDropEntityDetector.pickupActivatableEntities.Count; ++i)
+                        IPickupPressActivatableEntity activatable;
+                        for (int i = 0; i < ItemDropEntityDetector.pickupPressActivatableEntities.Count; ++i)
                         {
-                            activatable = ItemDropEntityDetector.pickupActivatableEntities[i];
-                            if (activatable.CanPickupActivate())
+                            activatable = ItemDropEntityDetector.pickupPressActivatableEntities[i];
+                            if (activatable.CanActivateByPickupKey())
                             {
-                                activatable.OnPickupActivate();
+                                activatable.OnActivateByPickupKey();
                                 break;
                             }
                         }
