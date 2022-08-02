@@ -34,20 +34,18 @@ namespace MultiplayerARPG
         [SerializeField]
         protected float buildRotateSpeed = 200f;
 
+        [Header("Entity Activating Settings")]
+        [SerializeField]
+        [Tooltip("If this value is `0`, this value will be set as `GameInstance` -> `conversationDistance`")]
+        protected float distanceToActivateByActivateKey = 0f;
+        [SerializeField]
+        [Tooltip("If this value is `0`, this value will be set as `GameInstance` -> `pickUpItemDistance`")]
+        protected float distanceToActivateByPickupKey = 0f;
+
         protected bool isLeftHandAttacking;
         protected bool isSprinting;
         protected bool isWalking;
         protected IPhysicFunctions physicFunctions;
-        protected BaseCharacterEntity targetCharacter;
-        protected BasePlayerCharacterEntity targetPlayer;
-        protected BaseMonsterCharacterEntity targetMonster;
-        protected NpcEntity targetNpc;
-        protected ItemDropEntity targetItemDrop;
-        protected BuildingEntity targetBuilding;
-        protected VehicleEntity targetVehicle;
-        protected WarpPortalEntity targetWarpPortal;
-        protected HarvestableEntity targetHarvestable;
-        protected ItemsContainerEntity targetItemsContainer;
         protected Vector3 aimTargetPosition;
 
         #region Events
@@ -88,24 +86,21 @@ namespace MultiplayerARPG
                 CacheGameplayCameraControls = Instantiate(gameplayCameraPrefab);
             if (minimapCameraPrefab != null)
                 CacheMinimapCameraControls = Instantiate(minimapCameraPrefab);
+            // Setup activate distance
+            if (distanceToActivateByActivateKey <= 0f)
+                distanceToActivateByActivateKey = GameInstance.Singleton.conversationDistance;
+            if (distanceToActivateByPickupKey <= 0f)
+                distanceToActivateByPickupKey = GameInstance.Singleton.pickUpItemDistance;
             // This entity detector will be find entities to use when pressed activate key
             GameObject tempGameObject = new GameObject("_ActivatingEntityDetector");
             ActivatableEntityDetector = tempGameObject.AddComponent<NearbyEntityDetector>();
-            ActivatableEntityDetector.detectingRadius = CurrentGameInstance.conversationDistance;
-            ActivatableEntityDetector.findPlayer = true;
-            ActivatableEntityDetector.findOnlyAlivePlayers = true;
-            ActivatableEntityDetector.findNpc = true;
-            ActivatableEntityDetector.findBuilding = true;
-            ActivatableEntityDetector.findOnlyAliveBuildings = true;
-            ActivatableEntityDetector.findOnlyActivatableBuildings = true;
-            ActivatableEntityDetector.findVehicle = true;
-            ActivatableEntityDetector.findWarpPortal = true;
+            ActivatableEntityDetector.detectingRadius = distanceToActivateByActivateKey;
+            ActivatableEntityDetector.findActivatePressActivatableEntity = true;
             // This entity detector will be find item drop entities to use when pressed pickup key
             tempGameObject = new GameObject("_ItemDropEntityDetector");
             ItemDropEntityDetector = tempGameObject.AddComponent<NearbyEntityDetector>();
-            ItemDropEntityDetector.detectingRadius = CurrentGameInstance.pickUpItemDistance;
-            ItemDropEntityDetector.findItemDrop = true;
-            ItemDropEntityDetector.findItemsContainer = true;
+            ItemDropEntityDetector.detectingRadius = distanceToActivateByPickupKey;
+            ItemDropEntityDetector.findPickupPressActivatableEntity = true;
             // Initial physic functions
             if (CurrentGameInstance.DimensionType == DimensionType.Dimension3D)
                 physicFunctions = new PhysicFunctions(512);
@@ -165,67 +160,36 @@ namespace MultiplayerARPG
                 // Activate nearby npcs / players / activable buildings
                 if (InputManager.GetButtonDown("Activate"))
                 {
-                    targetPlayer = null;
-                    if (ActivatableEntityDetector.players.Count > 0)
-                        targetPlayer = ActivatableEntityDetector.players[0];
-                    targetNpc = null;
-                    if (ActivatableEntityDetector.npcs.Count > 0)
-                        targetNpc = ActivatableEntityDetector.npcs[0];
-                    targetBuilding = null;
-                    if (ActivatableEntityDetector.buildings.Count > 0)
-                        targetBuilding = ActivatableEntityDetector.buildings[0];
-                    targetVehicle = null;
-                    if (ActivatableEntityDetector.vehicles.Count > 0)
-                        targetVehicle = ActivatableEntityDetector.vehicles[0];
-                    targetWarpPortal = null;
-                    if (ActivatableEntityDetector.warpPortals.Count > 0)
-                        targetWarpPortal = ActivatableEntityDetector.warpPortals[0];
-                    targetItemsContainer = null;
-                    if (ItemDropEntityDetector.itemsContainers.Count > 0)
-                        targetItemsContainer = ItemDropEntityDetector.itemsContainers[0];
-                    // Priority Player -> Npc -> Buildings
-                    if (targetPlayer && CacheUISceneGameplay)
+                    if (ActivatableEntityDetector.activatePressActivatableEntities.Count > 0)
                     {
-                        // Show dealing, invitation menu
-                        SelectedEntity = targetPlayer;
-                        CacheUISceneGameplay.SetActivePlayerCharacter(targetPlayer);
-                    }
-                    else if (targetNpc)
-                    {
-                        // Talk to NPC
-                        SelectedEntity = targetNpc;
-                        PlayingCharacterEntity.NpcAction.CallServerNpcActivate(targetNpc.ObjectId);
-                    }
-                    else if (targetBuilding)
-                    {
-                        // Use building
-                        SelectedEntity = targetBuilding;
-                        ActivateBuilding();
-                    }
-                    else if (targetVehicle)
-                    {
-                        // Enter vehicle
-                        PlayingCharacterEntity.CallServerEnterVehicle(targetVehicle.ObjectId);
-                    }
-                    else if (targetWarpPortal)
-                    {
-                        // Enter warp, For some warp portals that `warpImmediatelyWhenEnter` is FALSE
-                        PlayingCharacterEntity.CallServerEnterWarp(targetWarpPortal.ObjectId);
-                    }
-                    else if (targetItemsContainer)
-                    {
-                        // Show items
-                        ShowItemsContainerDialog(targetItemsContainer);
+                        IActivatePressActivatableEntity activatable;
+                        for (int i = 0; i < ActivatableEntityDetector.activatePressActivatableEntities.Count; ++i)
+                        {
+                            activatable = ActivatableEntityDetector.activatePressActivatableEntities[i];
+                            if (activatable.CanActivateByActivateKey())
+                            {
+                                activatable.OnActivateByActivateKey();
+                                break;
+                            }
+                        }
                     }
                 }
                 // Pick up nearby items
                 if (InputManager.GetButtonDown("PickUpItem"))
                 {
-                    targetItemDrop = null;
-                    if (ItemDropEntityDetector.itemDrops.Count > 0)
-                        targetItemDrop = ItemDropEntityDetector.itemDrops[0];
-                    if (targetItemDrop != null)
-                        PlayingCharacterEntity.CallServerPickupItem(targetItemDrop.ObjectId);
+                    if (ItemDropEntityDetector.pickupPressActivatableEntities.Count > 0)
+                    {
+                        IPickupPressActivatableEntity activatable;
+                        for (int i = 0; i < ItemDropEntityDetector.pickupPressActivatableEntities.Count; ++i)
+                        {
+                            activatable = ItemDropEntityDetector.pickupPressActivatableEntities[i];
+                            if (activatable.CanActivateByPickupKey())
+                            {
+                                activatable.OnActivateByPickupKey();
+                                break;
+                            }
+                        }
+                    }
                 }
                 // Reload
                 if (InputManager.GetButtonDown("Reload"))
