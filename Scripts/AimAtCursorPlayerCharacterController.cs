@@ -339,7 +339,8 @@ namespace MultiplayerARPG
             if (ConstructingBuildingEntity)
                 return;
             PlayingCharacterEntity.SetTargetEntity(SelectedGameEntity);
-            if (PlayingCharacterEntity.Attack(isLeftHandAttacking))
+            // Switching right/left/right/left...
+            if (PlayingCharacterEntity.Attack(ref isLeftHandAttacking))
                 isLeftHandAttacking = !isLeftHandAttacking;
         }
 
@@ -347,7 +348,9 @@ namespace MultiplayerARPG
         {
             if (ConstructingBuildingEntity)
                 return;
-            PlayingCharacterEntity.StartCharge(isLeftHandAttacking);
+            // Switching right/left/right/left...
+            if (PlayingCharacterEntity.StartCharge(ref isLeftHandAttacking))
+                isLeftHandAttacking = !isLeftHandAttacking;
         }
 
         protected void UpdateLookInput()
