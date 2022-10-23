@@ -375,7 +375,7 @@ namespace MultiplayerARPG
                     aimTargetPosition = physicFunctions.GetRaycastPoint(i);
                     tempTransform = physicFunctions.GetRaycastTransform(i);
                     tempGameEntity = tempTransform.GetComponent<IGameEntity>();
-                    if (tempGameEntity != null)
+                    if (!tempGameEntity.IsNull())
                     {
                         foundTargetEntity = true;
                         CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
@@ -415,7 +415,7 @@ namespace MultiplayerARPG
                     aimTargetPosition = physicFunctions.GetRaycastPoint(i);
                     tempTransform = physicFunctions.GetRaycastTransform(i);
                     tempGameEntity = tempTransform.GetComponent<IGameEntity>();
-                    if (tempGameEntity != null)
+                    if (!tempGameEntity.IsNull())
                     {
                         foundTargetEntity = true;
                         CacheUISceneGameplay.SetTargetEntity(tempGameEntity.Entity);
