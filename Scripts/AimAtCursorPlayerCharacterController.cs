@@ -96,6 +96,7 @@ namespace MultiplayerARPG
             ActivatableEntityDetector = tempGameObject.AddComponent<NearbyEntityDetector>();
             ActivatableEntityDetector.detectingRadius = distanceToActivateByActivateKey;
             ActivatableEntityDetector.findActivatableEntity = true;
+            ActivatableEntityDetector.findHoldActivatableEntity = true;
             // This entity detector will be find item drop entities to use when pressed pickup key
             tempGameObject = new GameObject("_ItemDropEntityDetector");
             ItemDropEntityDetector = tempGameObject.AddComponent<NearbyEntityDetector>();
@@ -775,6 +776,51 @@ namespace MultiplayerARPG
         protected Vector2 XZ(Vector3 vector3)
         {
             return new Vector2(vector3.x, vector3.z);
+        }
+
+        public override bool ShouldShowActivateButtons()
+        {
+            if (ActivatableEntityDetector.activatableEntities.Count > 0)
+            {
+                IActivatableEntity activatable;
+                for (int i = 0; i < ActivatableEntityDetector.activatableEntities.Count; ++i)
+                {
+                    activatable = ActivatableEntityDetector.activatableEntities[i];
+                    if (activatable.CanActivate())
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        public override bool ShouldShowHoldActivateButtons()
+        {
+            if (ActivatableEntityDetector.holdActivatableEntities.Count > 0)
+            {
+                IHoldActivatableEntity activatable;
+                for (int i = 0; i < ActivatableEntityDetector.holdActivatableEntities.Count; ++i)
+                {
+                    activatable = ActivatableEntityDetector.holdActivatableEntities[i];
+                    if (activatable.CanHoldActivate())
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        public override bool ShouldShowPickUpButtons()
+        {
+            if (ItemDropEntityDetector.pickupActivatableEntities.Count > 0)
+            {
+                IPickupActivatableEntity activatable;
+                for (int i = 0; i < ItemDropEntityDetector.pickupActivatableEntities.Count; ++i)
+                {
+                    activatable = ItemDropEntityDetector.pickupActivatableEntities[i];
+                    if (activatable.CanPickupActivate())
+                        return true;
+                }
+            }
+            return false;
         }
     }
 }
