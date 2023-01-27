@@ -250,7 +250,7 @@ namespace MultiplayerARPG
             moveDirection.Normalize();
 
             // Get fire type
-            FireType fireType = FireType.SingleFire;
+            FireType fireType;
             IWeaponItem leftHandItem = PlayingCharacterEntity.EquipWeapons.GetLeftHandWeaponItem();
             IWeaponItem rightHandItem = PlayingCharacterEntity.EquipWeapons.GetRightHandWeaponItem();
             if (isLeftHandAttacking && leftHandItem != null)
@@ -288,14 +288,13 @@ namespace MultiplayerARPG
                     {
                         case FireType.SingleFire:
                         case FireType.Automatic:
-                            Attack();
                             break;
                         case FireType.FireOnRelease:
                             WeaponCharge();
                             break;
                     }
                 }
-                else if (InputManager.GetButton("Fire1") || InputManager.GetButtonUp("Attack"))
+                else if (InputManager.GetButton("Fire1") || InputManager.GetButton("Attack"))
                 {
                     switch (fireType)
                     {
@@ -322,8 +321,7 @@ namespace MultiplayerARPG
             }
 
             // No pointer over ui and all attack key released, stop avoid attack inputs
-            if (avoidAttackWhileCursorOverUI && !isPointerOverUIObject &&
-                !InputManager.GetButton("Fire1") && !InputManager.GetButton("Attack"))
+            if (avoidAttackWhileCursorOverUI && !isPointerOverUIObject && !InputManager.GetButton("Fire1") && !InputManager.GetButton("Attack"))
                 avoidAttackWhileCursorOverUI = false;
 
             // Always forward
@@ -463,7 +461,7 @@ namespace MultiplayerARPG
             }
 
             // Turn character
-            if (lookDirection.sqrMagnitude > 0f)
+            if (lookDirection.sqrMagnitude > 0.01f)
             {
                 if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
                 {
