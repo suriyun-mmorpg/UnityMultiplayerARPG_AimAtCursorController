@@ -76,7 +76,7 @@ namespace MultiplayerARPG
         public Transform CacheMiniMapCameraTransform { get { return CacheMinimapCameraControls.CacheCameraTransform; } }
         public NearbyEntityDetector ActivatableEntityDetector { get; protected set; }
         public NearbyEntityDetector ItemDropEntityDetector { get; protected set; }
-        protected bool avoidAttackWhileCursorOverUI;
+        protected bool attackPreventedWhileCursorOverUI;
         protected float buildYRotate;
 
         protected override void Awake()
@@ -272,57 +272,66 @@ namespace MultiplayerARPG
                 HideNpcDialog();
             }
 
-            bool isPointerOverUIObject = CacheUISceneGameplay.IsPointerOverUIObject();
-            // If pointer over ui, start avoid attack inputs
-            // to prevent character attack while pointer over ui
-            if (isPointerOverUIObject)
-                avoidAttackWhileCursorOverUI = true;
-
             // Attack when player pressed attack button
-            if (!avoidAttackWhileCursorOverUI && !UICharacterHotkeys.UsingHotkey)
+            if (!UICharacterHotkeys.UsingHotkey)
             {
                 // NOTE: With this controller, single fire will do the same as automatic
                 if (InputManager.GetButtonDown("Fire1") || InputManager.GetButtonDown("Attack"))
                 {
-                    switch (fireType)
+                    bool isPointerOverUIObject = CacheUISceneGameplay.IsPointerOverUIObject();
+                    // If pointer over ui, start avoid attack inputs to prevent character attack while pointer over ui
+                    if (isPointerOverUIObject)
+                        attackPreventedWhileCursorOverUI = true;
+
+                    if (!attackPreventedWhileCursorOverUI)
                     {
-                        case FireType.SingleFire:
-                        case FireType.Automatic:
-                            break;
-                        case FireType.FireOnRelease:
-                            WeaponCharge();
-                            break;
+                        switch (fireType)
+                        {
+                            case FireType.SingleFire:
+                            case FireType.Automatic:
+                                break;
+                            case FireType.FireOnRelease:
+                                WeaponCharge();
+                                break;
+                        }
                     }
                 }
                 else if (InputManager.GetButton("Fire1") || InputManager.GetButton("Attack"))
                 {
-                    switch (fireType)
+                    if (!attackPreventedWhileCursorOverUI)
                     {
-                        case FireType.SingleFire:
-                        case FireType.Automatic:
-                            Attack();
-                            break;
-                        case FireType.FireOnRelease:
-                            break;
+                        switch (fireType)
+                        {
+                            case FireType.SingleFire:
+                            case FireType.Automatic:
+                                Attack();
+                                break;
+                            case FireType.FireOnRelease:
+                                break;
+                        }
                     }
                 }
                 else if (InputManager.GetButtonUp("Fire1") || InputManager.GetButtonUp("Attack"))
                 {
-                    switch (fireType)
+                    if (!attackPreventedWhileCursorOverUI)
                     {
-                        case FireType.SingleFire:
-                        case FireType.Automatic:
-                            break;
-                        case FireType.FireOnRelease:
-                            Attack();
-                            break;
+                        switch (fireType)
+                        {
+                            case FireType.SingleFire:
+                            case FireType.Automatic:
+                                break;
+                            case FireType.FireOnRelease:
+                                Attack();
+                                break;
+                        }
                     }
+
+                    bool isPointerOverUIObject = CacheUISceneGameplay.IsPointerOverUIObject();
+                    // No pointer over ui and all attack key released, stop avoid attack inputs
+                    if (attackPreventedWhileCursorOverUI && !isPointerOverUIObject)
+                        attackPreventedWhileCursorOverUI = false;
                 }
             }
-
-            // No pointer over ui and all attack key released, stop avoid attack inputs
-            if (avoidAttackWhileCursorOverUI && !isPointerOverUIObject && !InputManager.GetButton("Fire1") && !InputManager.GetButton("Attack"))
-                avoidAttackWhileCursorOverUI = false;
 
             // Always forward
             MovementState movementState = MovementState.None;
