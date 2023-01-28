@@ -103,11 +103,15 @@ namespace MultiplayerARPG
                 castedObj.SetData(buildGridSnap, buildGridOffsets, buildGridSize, buildRotationSnap, buildRotateAngle, buildRotateSpeed);
             });
             BuildAimController.Init();
+            // Initial area skill aim controller
+            AreaSkillAimController = gameObject.GetOrAddComponent<IAreaSkillAimController, DefaultAreaSkillAimController>();
+
             // Setup activate distance
             if (distanceToActivateByActivateKey <= 0f)
                 distanceToActivateByActivateKey = GameInstance.Singleton.conversationDistance;
             if (distanceToActivateByPickupKey <= 0f)
                 distanceToActivateByPickupKey = GameInstance.Singleton.pickUpItemDistance;
+
             // This entity detector will be find entities to use when pressed activate key
             GameObject tempGameObject = new GameObject("_ActivatingEntityDetector");
             ActivatableEntityDetector = tempGameObject.AddComponent<NearbyEntityDetector>();
