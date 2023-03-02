@@ -560,7 +560,7 @@ namespace MultiplayerARPG
                 {
                     GameInstance.ClientInventoryHandlers.RequestUnEquipItem(
                         inventoryType,
-                        (short)itemIndex,
+                        itemIndex,
                         equipWeaponSet,
                         -1,
                         ClientInventoryActions.ResponseUnEquipArmor,
@@ -580,7 +580,7 @@ namespace MultiplayerARPG
             {
                 GameInstance.ClientInventoryHandlers.RequestEquipItem(
                         PlayingCharacterEntity,
-                        (short)itemIndex,
+                        itemIndex,
                         HotkeyEquipWeaponSet,
                         ClientInventoryActions.ResponseEquipArmor,
                         ClientInventoryActions.ResponseEquipWeapon);
@@ -588,7 +588,7 @@ namespace MultiplayerARPG
             else if (item.IsSkill())
             {
                 bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack;
-                if (PlayingCharacterEntity.UseSkillItem((short)itemIndex, isLeftHandAttacking, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
+                if (PlayingCharacterEntity.UseSkillItem(itemIndex, isLeftHandAttacking, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
                 {
                     isLeftHandAttacking = !isLeftHandAttacking;
                 }
@@ -600,7 +600,7 @@ namespace MultiplayerARPG
             }
             else if (item.IsUsable())
             {
-                PlayingCharacterEntity.CallServerUseItem((short)itemIndex);
+                PlayingCharacterEntity.CallServerUseItem(itemIndex);
             }
         }
 
