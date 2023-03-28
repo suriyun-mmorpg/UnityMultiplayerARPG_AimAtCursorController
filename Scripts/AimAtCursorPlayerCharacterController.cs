@@ -400,8 +400,8 @@ namespace MultiplayerARPG
                             if (!doNotTurnToPointingEntity)
                             {
                                 // Find target position
-                                if (tempGameEntity is IDamageableEntity)
-                                    tempTargetPosition = (tempGameEntity as IDamageableEntity).OpponentAimTransform.position;
+                                if (tempGameEntity is IDamageableEntity damageable)
+                                    tempTargetPosition = damageable.OpponentAimTransform.position;
                                 else
                                     tempTargetPosition = tempGameEntity.GetTransform().position;
                                 // Set look direction
@@ -440,8 +440,8 @@ namespace MultiplayerARPG
                             if (!doNotTurnToPointingEntity)
                             {
                                 // Find target position
-                                if (tempGameEntity is IDamageableEntity)
-                                    tempTargetPosition = (tempGameEntity as IDamageableEntity).OpponentAimTransform.position;
+                                if (tempGameEntity is IDamageableEntity damageable)
+                                    tempTargetPosition = damageable.OpponentAimTransform.position;
                                 else
                                     tempTargetPosition = tempGameEntity.GetTransform().position;
                                 // Set look direction
