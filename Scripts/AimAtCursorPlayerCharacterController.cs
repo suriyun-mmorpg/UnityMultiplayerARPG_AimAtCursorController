@@ -590,7 +590,7 @@ namespace MultiplayerARPG
             }
             else if (item.IsBuilding())
             {
-                buildingItemIndex = itemIndex;
+                _buildingItemIndex = itemIndex;
                 ShowConstructBuildingDialog();
             }
             else if (item.IsUsable())
