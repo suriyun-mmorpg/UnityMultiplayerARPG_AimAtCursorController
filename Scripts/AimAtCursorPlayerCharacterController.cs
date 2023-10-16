@@ -207,7 +207,7 @@ namespace MultiplayerARPG
                 if (InputManager.GetButtonDown("ExitVehicle"))
                 {
                     // Exit vehicle
-                    PlayingCharacterEntity.CallServerExitVehicle();
+                    PlayingCharacterEntity.CallCmdExitVehicle();
                 }
                 if (InputManager.GetButtonDown("SwitchEquipWeaponSet"))
                 {
@@ -598,7 +598,7 @@ namespace MultiplayerARPG
             }
             else if (item.IsUsable())
             {
-                PlayingCharacterEntity.CallServerUseItem(itemIndex);
+                PlayingCharacterEntity.CallCmdUseItem(itemIndex);
             }
         }
 
@@ -607,7 +607,7 @@ namespace MultiplayerARPG
             if (GameInstance.JoinedGuild == null)
                 return;
             int dataId = BaseGameData.MakeDataId(id);
-            PlayingCharacterEntity.CallServerUseGuildSkill(dataId);
+            PlayingCharacterEntity.CallCmdUseGuildSkill(dataId);
         }
 
         public Vector3 GetMoveDirection(float horizontalInput, float verticalInput)
