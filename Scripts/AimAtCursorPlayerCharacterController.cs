@@ -585,7 +585,7 @@ namespace MultiplayerARPG
             }
             else if (item.IsSkill())
             {
-                bool isAttackSkill = (item as ISkillItem).UsingSkill.IsAttack;
+                bool isAttackSkill = (item as ISkillItem).SkillData.IsAttack;
                 if (PlayingCharacterEntity.UseSkillItem(itemIndex, isLeftHandAttacking, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
                 {
                     isLeftHandAttacking = !isLeftHandAttacking;
