@@ -232,7 +232,7 @@ namespace MultiplayerARPG
         protected void UpdateWASDInput()
         {
             // If mobile platforms, don't receive input raw to make it smooth
-            bool raw = !InputManager.UseMobileInput();
+            bool raw = !InputManager.IsUseMobileInput();
             Vector3 moveDirection = GetMoveDirection(InputManager.GetAxis("Horizontal", raw), InputManager.GetAxis("Vertical", raw));
             moveDirection.Normalize();
 
@@ -388,7 +388,7 @@ namespace MultiplayerARPG
         protected void UpdateLookInput()
         {
             bool foundTargetEntity = false;
-            bool isMobile = InputManager.UseMobileInput();
+            bool isMobile = InputManager.IsUseMobileInput();
             Vector2 lookDirection;
             if (isMobile)
             {
