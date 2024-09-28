@@ -499,11 +499,11 @@ namespace MultiplayerARPG
             {
                 if (GameInstance.Singleton.DimensionType == DimensionType.Dimension2D)
                 {
-                    PlayingCharacterEntity.SetLookRotation(Quaternion.LookRotation(lookDirection));
+                    PlayingCharacterEntity.SetLookRotation(Quaternion.LookRotation(lookDirection), false);
                 }
                 else
                 {
-                    PlayingCharacterEntity.SetLookRotation(Quaternion.LookRotation(new Vector3(lookDirection.x, 0, lookDirection.y)));
+                    PlayingCharacterEntity.SetLookRotation(Quaternion.LookRotation(new Vector3(lookDirection.x, 0, lookDirection.y)), false);
                 }
             }
         }
