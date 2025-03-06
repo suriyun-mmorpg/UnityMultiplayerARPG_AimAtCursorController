@@ -510,9 +510,9 @@ namespace MultiplayerARPG
         protected void ReloadAmmo()
         {
             // Reload ammo at server
-            if (!PlayingCharacterEntity.EquipWeapons.rightHand.IsAmmoFull())
+            if (!PlayingCharacterEntity.EquipWeapons.rightHand.IsAmmoFull(PlayingCharacterEntity))
                 PlayingCharacterEntity.Reload(false);
-            else if (!PlayingCharacterEntity.EquipWeapons.leftHand.IsAmmoFull())
+            else if (!PlayingCharacterEntity.EquipWeapons.leftHand.IsAmmoFull(PlayingCharacterEntity))
                 PlayingCharacterEntity.Reload(true);
         }
 
