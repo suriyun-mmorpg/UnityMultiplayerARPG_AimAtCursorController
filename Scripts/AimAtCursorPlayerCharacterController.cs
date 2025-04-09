@@ -371,8 +371,12 @@ namespace MultiplayerARPG
                 return;
             PlayingCharacterEntity.SetTargetEntity(SelectedGameEntity);
             // Switching right/left/right/left...
-            if (PlayingCharacterEntity.Attack(ref _isLeftHandAttacking))
+            WeaponHandlingState weaponHandlingState = GetWeaponHandlingState(_isLeftHandAttacking);
+            if (PlayingCharacterEntity.Attack(ref weaponHandlingState))
+            {
+                _isLeftHandAttacking = weaponHandlingState.Has(WeaponHandlingState.IsLeftHand);
                 _isLeftHandAttacking = !_isLeftHandAttacking;
+            }
         }
 
         protected void WeaponCharge()
@@ -551,8 +555,10 @@ namespace MultiplayerARPG
                 !PlayingCharacterEntity.GetCaches().Skills.TryGetValue(skill, out _))
                 return false;
             bool isAttackSkill = skill.IsAttack;
-            if (PlayingCharacterEntity.UseSkill(skill.DataId, _isLeftHandAttacking, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
+            WeaponHandlingState weaponHandlingState = GetWeaponHandlingState(_isLeftHandAttacking);
+            if (PlayingCharacterEntity.UseSkill(skill.DataId, weaponHandlingState, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
             {
+                _isLeftHandAttacking = weaponHandlingState.Has(WeaponHandlingState.IsLeftHand);
                 _isLeftHandAttacking = !_isLeftHandAttacking;
                 return true;
             }
@@ -607,8 +613,10 @@ namespace MultiplayerARPG
             else if (item.IsSkill())
             {
                 bool isAttackSkill = (item as ISkillItem).SkillData.IsAttack;
-                if (PlayingCharacterEntity.UseSkillItem(itemIndex, _isLeftHandAttacking, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
+                WeaponHandlingState weaponHandlingState = GetWeaponHandlingState(_isLeftHandAttacking);
+                if (PlayingCharacterEntity.UseSkillItem(itemIndex, weaponHandlingState, SelectedGameEntityObjectId, aimPosition) && isAttackSkill)
                 {
+                    _isLeftHandAttacking = weaponHandlingState.Has(WeaponHandlingState.IsLeftHand);
                     _isLeftHandAttacking = !_isLeftHandAttacking;
                     return true;
                 }
@@ -708,6 +716,14 @@ namespace MultiplayerARPG
                 }
             }
             return false;
+        }
+
+        public WeaponHandlingState GetWeaponHandlingState(bool isLeftHand)
+        {
+            WeaponHandlingState weaponHandlingState = WeaponHandlingState.None;
+            if (isLeftHand)
+                weaponHandlingState |= WeaponHandlingState.IsLeftHand;
+            return weaponHandlingState;
         }
     }
 }
