@@ -139,7 +139,7 @@ namespace MultiplayerARPG
                 Destroy(ItemDropEntityDetector.gameObject);
         }
 
-        protected override void Update()
+        public override void ManagedUpdate()
         {
             if (!PlayingCharacterEntity || !PlayingCharacterEntity.IsOwnerClient)
                 return;
