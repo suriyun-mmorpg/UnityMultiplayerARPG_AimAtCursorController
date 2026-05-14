@@ -63,6 +63,8 @@ namespace MultiplayerARPG
         public NearbyEntityDetector ItemDropEntityDetector { get; protected set; }
         public IGameplayCameraController CacheGameplayCameraController { get; protected set; }
         public IMinimapCameraController CacheMinimapCameraController { get; protected set; }
+        public override Camera MainCamera => CacheGameplayCameraController.Camera;
+        public override Transform MainCameraTransform => CacheGameplayCameraController.CameraTransform;
 
         // Input & control states variables
         protected bool _isLeftHandAttacking;
