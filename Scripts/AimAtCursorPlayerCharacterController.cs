@@ -64,6 +64,7 @@ namespace MultiplayerARPG
         public IGameplayCameraController CacheGameplayCameraController { get; protected set; }
         public IMinimapCameraController CacheMinimapCameraController { get; protected set; }
         public override Camera MainCamera => CacheGameplayCameraController.Camera;
+        public override IGameplayCameraController GameplayCameraController => CacheGameplayCameraController;
         public override Transform MainCameraTransform => CacheGameplayCameraController.CameraTransform;
         public override Vector3 AssignedCameraTargetOffset { get; set; }
         public override float AssignedCameraZoomDistance { get; set; }
@@ -148,11 +149,15 @@ namespace MultiplayerARPG
                 Destroy(ItemDropEntityDetector.gameObject);
         }
 
-        public override void ManagedUpdate()
+        protected override void UpdateController()
         {
             if (!PlayingCharacterEntity || !PlayingCharacterEntity.IsOwnerClient)
                 return;
             UpdateInput();
+        }
+
+        protected override void LateUpdateController()
+        {
         }
 
         protected void UpdateInput()
